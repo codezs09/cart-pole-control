@@ -1,0 +1,25 @@
+syntax = "proto3"
+
+message Horizon {  // Predicted horizon from the MPC
+    repeated double t = 1; 
+    repeated double x = 2; 
+    repeated double dx = 3; 
+    repeated double theta = 4; 
+    repeated double dtheta = 5;
+    repeated double force = 6;
+}
+
+message Frame {
+    int32 id = 1; 
+    double time = 2;
+    double x = 3; 
+    double dx = 4; 
+    double theta  = 5; 
+    double dtheta = 6; 
+    double force = 7; 
+    Horizon horizon = 8; 
+}
+
+message Data {
+    repeated Frame frames = 1; 
+}
