@@ -5,7 +5,12 @@ import os
 import numpy as np
 import argparse
 
+from model.model import Model
 from data_pb2 import Data, Frame
+
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+MODEL_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/model_param.json")
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -19,7 +24,7 @@ def parse_args():
     return args
 
 def simu(args): 
-    dt = 0.01   # [s], time step
+    ctrl_dt = 0.01   # [s], time step of ctrl ZOH
     time = 0.0
 
     # load super params
@@ -27,8 +32,8 @@ def simu(args):
 
     # initial state
     state = [0.0, 0.0, 0.0, 0.0] # [x, x_dot, theta, theta_dot]
-    model = Model() 
-    model.init(state)
+    model = Model(MODEL_PARAM_PATH)
+    model.set_initial_state(state)
     data_msg = Data()
     for i in range(1000):
         # call nmpc to get the optimal control
@@ -52,7 +57,7 @@ def simu(args):
         data_msg.frames.add().CopyFrom(new_frame)
 
         # update
-        state = model.step(force, dt)
+        state = model.step(force, ctrl_dt)
         time += dt
     
     # save data to protobuf

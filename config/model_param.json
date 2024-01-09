@@ -1,0 +1,8 @@
+{
+    "mass_cart": 0.5,
+    "mass_pole": 0.2,
+    "damping_cart": 0.1,
+    "length_com_pole": 0.3,
+    "inertia_pole": 0.006,
+    "gravity": 9.81
+}
