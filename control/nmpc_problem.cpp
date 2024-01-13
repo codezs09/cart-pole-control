@@ -4,8 +4,8 @@ namespace CartPole {
 
 bool NmpcProblem::Init(const std::string& super_param_path,
                        const std::string& control_param_path) {
-  load_json(super_param_path, &super_param_);
-  load_json(control_param_path, &control_param_);
+  utils::load_json(super_param_path, &super_param_);
+  utils::load_json(control_param_path, &control_param_);
 }
 
 /**
@@ -67,8 +67,8 @@ void NmpcProblem::Solve(const std::vector<double>& state,
 }
 
 void NmpcProblem::_UpdateResults(
-    const CppAD::ipopt::solve_result<Dvector>& solution, const FG_eval& fg_eval,
-    const std cart_pole::Frame* frame) {
+    const CppAD::ipopt::solve_result<Dvector>& solution, FG_eval& fg_eval,
+    cart_pole::Frame* frame) {
   // OPTIONAL: output solution.x for next initial guess
 
   // fill state and control optimal sequence
@@ -81,12 +81,12 @@ void NmpcProblem::_UpdateResults(
   frame->set_force(us_val[0]);
   auto horizon = frame->mutable_horizon();
 
-  horizon->mutable_t() = {ts_val.begin(), ts_val.end()};
-  horizon->mutable_x() = {xs_val.begin(), xs_val.end()};
-  horizon->mutable_dx() = {dxs_val.begin(), dxs_val.end()};
-  horizon->mutable_theta() = {thetas_val.begin(), thetas_val.end()};
-  horizon->mutable_dtheta() = {dthetas_val.begin(), dthetas_val.end()};
-  horizon->mutable_force() = {us_val.begin(), us_val.end()};
+  horizon->mutable_t()->Add(ts_val.begin(), ts_val.end());
+  horizon->mutable_x()->Add(xs_val.begin(), xs_val.end());
+  horizon->mutable_dx()->Add(dxs_val.begin(), dxs_val.end());
+  horizon->mutable_theta()->Add(thetas_val.begin(), thetas_val.end());
+  horizon->mutable_dtheta()->Add(dthetas_val.begin(), dthetas_val.end());
+  horizon->mutable_force()->Add(us_val.begin(), us_val.end());
 
   // fill value of costs
   double cost_x_val, cost_theta_val, cost_u_val, cost_du_val;
@@ -129,8 +129,10 @@ void NmpcProblem::_SetInitialGuess(Dvector* vars) {
 
 void NmpcProblem::_SetVariableBounds(Dvector* vars_lowerbound,
                                      Dvector* vars_upperbound) {
-  const double force_rate_limit = std::fabs(control_param_["force_rate_limit"]);
-  const double delta_u_limit = force_rate_limit * control_param_["mpc_dt"];
+  const double force_rate_limit =
+      std::fabs(static_cast<double>(control_param_["force_rate_limit"]));
+  const double delta_u_limit =
+      force_rate_limit * static_cast<double>(control_param_["mpc_dt"]);
 
   for (size_t i = 0; i < vars_lowerbound->size(); ++i) {
     (*vars_lowerbound)[i] = -delta_u_limit;

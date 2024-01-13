@@ -34,11 +34,11 @@ class FG_eval {
                               std::vector<double>* xs_val,
                               std::vector<double>* dxs_val,
                               std::vector<double>* thetas_val,
-                              std::vector<double>* dthetas_val) const;
+                              std::vector<double>* dthetas_val);
 
   void GetCostsValues(const std::vector<double>& vars_val, double* cost_x_val,
                       double* cost_theta_val, double* cost_u_val,
-                      double* cost_du_val) const;
+                      double* cost_du_val);
 
  private:
   void _UpdateADStateSequence(const ADvector& vars, ADvector* us, ADvector* xs,

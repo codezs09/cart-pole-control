@@ -56,7 +56,7 @@ void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
   // update
   ts_val->resize(hp_);
   for (size_t i = 0; i < hp_; i++) {
-    ts_val->at(i) = i * control_param_["mpc_dt"];
+    ts_val->at(i) = i * static_cast<double>(control_param_["mpc_dt"]);
   }
 
   us_val->assign(hp_, outputs_val[hc_ - 1]);

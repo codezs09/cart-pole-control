@@ -19,9 +19,22 @@ The cart-pole env in gymnasium was used for visualization. Test if visualization
 python3 ./vis/examples/test_vis.py
 ```
 
+Test if the cart-pole model can run smoothly:
+```
+python3 ./model/model.py --enable_vis
+```
+
+
 ## Build
 
 build
+
+```
+mkdir build
+cd build
+cmake ..
+make -j4
+```
 
 ## Simulation
 

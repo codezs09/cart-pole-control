@@ -3,7 +3,7 @@ import numpy as np
 from math import sin, cos
 
 from utils.json_utils import load_json
-from rk4step import rk4step
+from model.rk4step import rk4step
 
 class Model:
     def __init__(self, mdl_param_path):
@@ -64,9 +64,14 @@ For test purpose. To test the script, run "python3 model.py".
 """
 if __name__=="__main__":
     import os
+    import argparse
 
-    ENABLE_VIS = True
-    if ENABLE_VIS:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--enable_vis', action='store_true', 
+                        help='enable visualization.')
+    args = parser.parse_args()
+
+    if args.enable_vis:
         import time
         import gymnasium as gym
         env = gym.make('CartPole-v1', render_mode="human")
@@ -83,7 +88,7 @@ if __name__=="__main__":
         i = 0
         t = 0.0
         while t < 1.0:
-            if ENABLE_VIS:
+            if args.enable_vis:
                 env.unwrapped.state = state
                 env.render()
                 time.sleep(dt)
@@ -93,7 +98,7 @@ if __name__=="__main__":
             i += 1
             t += dt
 
-        if ENABLE_VIS:
+        if args.enable_vis:
             time.sleep(1)
             env.close()
 

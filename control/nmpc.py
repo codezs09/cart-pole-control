@@ -1,13 +1,17 @@
 
-
+import os
+import sys
 import ctypes
 import numpy as np
 
 from proto.proto_gen.data_pb2 import Data, Frame
 
 
-NMPC_CPP_LIB_PATH = "/path/to/libnmpc.so"
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+NMPC_CPP_LIB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), "build/control/libnmpc.so")
 NMPC_CPP_LIB = ctypes.CDLL(NMPC_CPP_LIB_PATH)
+
+sys.path.append('/home/deeproute/Projects/nmpc-cart-pole/build/control')
 
 class NMPC:
     def __init__(self, super_param_path, control_param_path):

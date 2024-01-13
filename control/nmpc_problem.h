@@ -33,6 +33,9 @@ class NmpcProblem {
   void _SetConstraintsBounds(Dvector* constraints_lowerbound,
                              Dvector* constraints_upperbound);
 
+  void _UpdateResults(const CppAD::ipopt::solve_result<Dvector>& solution,
+                      FG_eval& fg_eval, cart_pole::Frame* frame);
+
   json super_param_;
   json control_param_;
 };

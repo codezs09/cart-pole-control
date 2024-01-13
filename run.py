@@ -34,26 +34,26 @@ def simu(args):
 
     # initial state
     state = [0.0, 0.0, 0.0, 0.0] # [x, x_dot, theta, theta_dot]
+    force = 0.0
     model = Model(MODEL_PARAM_PATH)
     nmpc = NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     model.set_initial_state(state)
     data_msg = Data()
     for i in range(1000):
-        # call nmpc to get the optimal control
-        force = nmpc.control(state, target)     # the control method calls ctypes c++ ipopt solver
+        nmpc.control(state, target, force)
         
-        # add to data_msg
         new_frame = nmpc.get_frame_msg()
         new_frame.id = i    # set frame_id and time
         new_frame.time = time
         data_msg.frames.add().CopyFrom(new_frame)
 
         # update
+        force = new_frame.force
         state = model.step(force, ctrl_dt)
         time += ctrl_dt
 
-    # save data to protobuf
-    save_data(data_msg)
+    # # save data to protobuf
+    # save_data(data_msg)
 
 def vis(args):
     # load protobuf data
