@@ -1,15 +1,13 @@
 
-import json
 import numpy as np
 from math import sin, cos
 
+from utils.json_utils import load_json
 from rk4step import rk4step
 
 class Model:
     def __init__(self, mdl_param_path):
-        with open(mdl_param_path, 'r') as f:
-            mdl_param = json.load(f)
-            self.mdl_param = mdl_param
+        self._mdl_param = load_json(mdl_param_path)
         self._state = np.array([0.0, 0.0, 0.0, 0.0])  # [x, x_dot, psi, psi_dot]
 
     def set_initial_state(self, state):
@@ -21,7 +19,7 @@ class Model:
         while (t < duration):
             dt = min(t_step, duration - t)
             self._state = rk4step(self._dynamic_function, self._state, dt, \
-                                  force, self.mdl_param)
+                                  force, self._mdl_param)
             t += dt
         return self._state
 

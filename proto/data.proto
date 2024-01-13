@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package cart_pole;
+
 message Horizon {  // Predicted horizon from the MPC
   repeated double t = 1;
   repeated double x = 2;
@@ -7,6 +9,15 @@ message Horizon {  // Predicted horizon from the MPC
   repeated double theta = 4;
   repeated double dtheta = 5;
   repeated double force = 6;
+}
+
+message Costs {
+  // mpc costs
+  double cost_total = 1;
+  double cost_x = 2;
+  double cost_theta = 3;
+  double cost_u = 4;
+  double cost_du = 5;
 }
 
 message Frame {
@@ -18,6 +29,8 @@ message Frame {
   double dtheta = 6;
   double force = 7;
   Horizon horizon = 8;
+  Costs costs = 9;
+  bool status = 10;  // 0: failed, 1: success
 }
 
 message Data {
