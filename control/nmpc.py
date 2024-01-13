@@ -25,7 +25,7 @@ class NMPC:
     def control(self, state, target, last_control):
         if not isinstance(state, np.ndarray): 
             state = np.array(state, dtype=np.float64)
-        if not isinstance(target, dtype=np.float64): 
+        if not isinstance(target, np.ndarray): 
             target = np.array(target, dtype=np.float64)
 
         NMPC_CPP_LIB.RunSolver.argtypes = [ctypes.c_void_p, \
@@ -33,7 +33,7 @@ class NMPC:
                                            ctypes.POINTER(ctypes.c_double), ctypes.c_int, \
                                            ctypes.c_double]
         NMPC_CPP_LIB.RunSolver(self._nmpc, state.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), state.size, \
-                                target.data_as(ctypes.POINTER(ctypes.c_double)), target.size, \
+                                target.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), target.size, \
                                 last_control)
 
     def get_frame_msg(self):

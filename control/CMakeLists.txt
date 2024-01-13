@@ -7,4 +7,5 @@ add_library(nmpc SHARED
 target_link_libraries(nmpc PUBLIC
                     ${IPOPT_LIBRARIES}
                     ${CPPAD_LIBRARIES}
-                    cart_pole_proto)
+                    cart_pole_proto
+                    cart_pole_utils)
