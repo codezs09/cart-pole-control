@@ -52,6 +52,8 @@ def simu(args):
         state = model.step(force, ctrl_dt)
         time += ctrl_dt
 
+        print("frame_id: ", new_frame.id, ", time: ", new_frame.time, ", force: ", new_frame.force, ", state: ", state)
+
     # # save data to protobuf
     # save_data(data_msg)
 

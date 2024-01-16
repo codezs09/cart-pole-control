@@ -32,7 +32,8 @@ class Nmpc {
   bool RunSolver(const std::vector<double>& state,
                  const std::vector<double>& target, double last_control);
 
-  const char* GetCStringOfSerializedFrameMsg();
+  //   const char* GetCStringOfSerializedFrameMsg();
+  void GetCStringOfSerializedFrameMsg(char** c_str_ptr, int* c_str_size);
 
  private:
   void _SerializedFrameMsgToCString();
@@ -40,6 +41,7 @@ class Nmpc {
   NmpcProblem nmpc_problem_;
   cart_pole::Frame frame_;
   char* c_str_ = nullptr;
+  int c_str_size_ = 0;
 };
 
 extern "C" {
@@ -48,7 +50,8 @@ EXPORT_API Nmpc* CreateNMPC(const char* super_param_path,
 EXPORT_API bool RunSolver(Nmpc* nmpc, double* c_state, int c_state_size,
                           double* c_target, int c_target_size,
                           double last_control);
-EXPORT_API const char* GetSerializedFrameMsg(Nmpc* nmpc);
+EXPORT_API void GetSerializedFrameMsg(Nmpc* nmpc, char** c_str_ptr,
+                                      int* c_str_size);
 EXPORT_API bool DestroyNMPC(Nmpc* nmpc);
 }
 

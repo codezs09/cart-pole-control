@@ -4,7 +4,7 @@ import sys
 import ctypes
 import numpy as np
 
-from proto.proto_gen.data_pb2 import Data, Frame
+from proto.proto_gen.data_pb2 import Frame
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -37,10 +37,27 @@ class NMPC:
                                 last_control)
 
     def get_frame_msg(self):
-        NMPC_CPP_LIB.GetSerializedFrameMsg.restype = ctypes.c_char_p
-        serialized_frame_msg = NMPC_CPP_LIB.GetSerializedFrameMsg(self._nmpc)
+        c_str = ctypes.c_char_p()
+        c_str_size = ctypes.c_int()
+
+        NMPC_CPP_LIB.GetSerializedFrameMsg.argtypes = [ctypes.c_void_p, \
+                                                       ctypes.POINTER(ctypes.c_char_p), \
+                                                       ctypes.POINTER(ctypes.c_int)]
+        NMPC_CPP_LIB.GetSerializedFrameMsg.restype = None
+        NMPC_CPP_LIB.GetSerializedFrameMsg(self._nmpc, \
+                                                                   ctypes.byref(c_str), \
+                                                                   ctypes.byref(c_str_size))
+        serialized_frame_msg = ctypes.string_at(c_str, c_str_size.value)        
+        # print("serialized_frame_msg: ", serialized_frame_msg)
         frame_msg = Frame()
         frame_msg.ParseFromString(serialized_frame_msg)
+
+        # print(f"PYTHON frame: x={frame_msg.x:.6f}, dx={frame_msg.dx:.6f}, theta={frame_msg.theta:.6f}, dtheta={frame_msg.dtheta:.6f}, force={frame_msg.force:.6f}")
+        # horizon = frame_msg.horizon
+        # for i in range(len(horizon.t)):
+        #     print(f"PYTHON horizon: t={horizon.t[i]:.6f}, x={horizon.x[i]:.6f}, dx={horizon.dx[i]:.6f}, \
+        #           theta={horizon.theta[i]:.6f}, dtheta={horizon.dtheta[i]:.6f}, force={horizon.force[i]:.6f}")
+            
         return frame_msg
 
     def __del__(self):
