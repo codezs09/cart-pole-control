@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 
 from utils.utils import load_json, load_data, save_data
-from vis.vis_data import vis_data
+from vis.vis_data import vis_data, plot_data_frames
 from model.model import Model
 from control.nmpc import NMPC
 from proto.proto_gen.data_pb2 import Data, Frame
@@ -33,6 +33,7 @@ def parse_args():
 
 def simu(args):
     ctrl_dt = super_param["ctrl_time_step"]    # [s], time step of ctrl ZOH
+    simulation_duration = super_param["simulation_duration"]  # [s]
     target = [super_param["target"]["x"], super_param["target"]["theta"]] # [x, theta]
     # initial state
     state = [super_param["init_state"]["x"], super_param["init_state"]["dx"], \
@@ -43,8 +44,9 @@ def simu(args):
     model = Model(MODEL_PARAM_PATH)
     nmpc = NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     model.set_initial_state(state)
-    data_msg = Data()    
-    for i in range(100):
+    data_msg = Data()
+    num_frames = int(simulation_duration / ctrl_dt)
+    for i in range(num_frames):
         nmpc.control(state, target, force)
         
         new_frame = nmpc.get_frame_msg()
@@ -67,8 +69,7 @@ def vis(args):
     if args.save_gif:
         vis_data(data_msg, ctrl_dt, RESULT_DIR, args.save_gif)
     
-    # plot data at args.s if given
-    # save animation to gif
+    plot_data_frames(data_msg, super_param, ctrl_dt, RESULT_DIR)
 
 
 def run():

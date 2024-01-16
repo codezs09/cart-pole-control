@@ -1,4 +1,6 @@
+import os
 import json
+import imageio
 from proto.proto_gen.data_pb2 import Data
 
 def load_json(json_path):
@@ -17,3 +19,14 @@ def load_data(file_path):
     data_msg = Data()
     data_msg.ParseFromString(serialized_data_msg)
     return data_msg
+
+def make_gif(frames_dir, export_path, dt):
+    image_files = [f for f in os.listdir(frames_dir) if f.endswith('.png')]
+    image_files.sort(key=lambda x: int(x.split('.')[0]))
+
+    images = []
+    for image_file in image_files:
+        image_path = os.path.join(frames_dir, image_file)
+        images.append(imageio.imread(image_path))
+
+    imageio.mimsave(export_path, images, duration=dt, loop=0)

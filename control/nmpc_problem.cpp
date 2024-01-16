@@ -79,6 +79,7 @@ void NmpcProblem::_UpdateResults(
                                  &thetas_val, &dthetas_val);
 
   frame->set_force(us_val[0]);
+  frame->clear_horizon();
   auto horizon = frame->mutable_horizon();
 
   horizon->mutable_t()->Add(ts_val.begin(), ts_val.end());

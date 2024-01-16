@@ -1,5 +1,6 @@
 {
     "ctrl_time_step": 0.01,
+    "simulation_duration": 1.0,
     "target": {
         "x": 0.2,
         "theta": 0.1

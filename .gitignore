@@ -3,3 +3,4 @@ build/*
 proto/proto_gen/*
 *.bin
 *.gif
+*.png
