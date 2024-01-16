@@ -1,1 +1,14 @@
-{}
+{
+    "ctrl_time_step": 0.01,
+    "target": {
+        "x": 0.2,
+        "theta": 0.1
+    },
+    "init_state": {
+        "x": 0.0,
+        "dx": 0.0,
+        "theta": 0.0,
+        "dtheta": 0.0,
+        "force": 0.0
+    }
+}

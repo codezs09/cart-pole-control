@@ -5,15 +5,19 @@ import os
 import numpy as np
 import argparse
 
-from utils.json_utils import load_json
+from utils.utils import load_json, load_data, save_data
+from vis.vis_data import vis_data
 from model.model import Model
 from control.nmpc import NMPC
 from proto.proto_gen.data_pb2 import Data, Frame
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+RESULT_DIR = os.path.join(SCRIPT_DIR, "result")
 MODEL_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/model_param.json")
 SUPER_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/super_param.json")
 CONTROL_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/control_param.json")
+
+super_param = load_json(SUPER_PARAM_PATH)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -22,24 +26,25 @@ def parse_args():
     parser.add_argument('-s', '--second', type=float, default = -1.0,
                         help='Show result at the given second.'
                         'Result will not be shown if s is out of simulation time range.')
-
+    parser.add_argument('--save_gif', action='store_true',
+                        help='Save the animation to a gif file.')
     args = parser.parse_args()
     return args
 
-def simu(args): 
-    ctrl_dt = 0.01   # [s], time step of ctrl ZOH
-    time = 0.0
-
-    target = [0.2, 0.1] # [x, theta]
-
+def simu(args):
+    ctrl_dt = super_param["ctrl_time_step"]    # [s], time step of ctrl ZOH
+    target = [super_param["target"]["x"], super_param["target"]["theta"]] # [x, theta]
     # initial state
-    state = [0.0, 0.0, 0.0, 0.0] # [x, x_dot, theta, theta_dot]
-    force = 0.0
+    state = [super_param["init_state"]["x"], super_param["init_state"]["dx"], \
+                super_param["init_state"]["theta"], super_param["init_state"]["dtheta"]] # [x, x_dot, theta, theta_dot]
+    force = super_param["init_state"]["force"]  # [N]
+
+    time = 0.0
     model = Model(MODEL_PARAM_PATH)
     nmpc = NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     model.set_initial_state(state)
-    data_msg = Data()
-    for i in range(1000):
+    data_msg = Data()    
+    for i in range(100):
         nmpc.control(state, target, force)
         
         new_frame = nmpc.get_frame_msg()
@@ -53,16 +58,18 @@ def simu(args):
         time += ctrl_dt
 
         print("frame_id: ", new_frame.id, ", time: ", new_frame.time, ", force: ", new_frame.force, ", state: ", state)
-
-    # # save data to protobuf
-    # save_data(data_msg)
+    save_data(data_msg, os.path.join(RESULT_DIR, "data.bin"))
 
 def vis(args):
-    # load protobuf data
-    # generate animation
+    data_msg = load_data(os.path.join(RESULT_DIR, "data.bin"))
+    ctrl_dt = super_param["ctrl_time_step"]
+    vis_data(data_msg, ctrl_dt)
+    if args.save_gif:
+        vis_data(data_msg, ctrl_dt, RESULT_DIR, args.save_gif)
+    
     # plot data at args.s if given
     # save animation to gif
-    pass
+
 
 def run():
     args = parse_args()

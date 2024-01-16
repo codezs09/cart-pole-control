@@ -2,7 +2,7 @@
 import numpy as np
 from math import sin, cos
 
-from utils.json_utils import load_json
+from utils.utils import load_json
 from model.rk4step import rk4step
 
 class Model:
