@@ -1,9 +1,9 @@
 {
-    "ctrl_time_step": 0.01,
-    "simulation_duration": 1.0,
+    "ctrl_time_step": 0.02,
+    "simulation_duration": 5.0,
     "target": {
         "x": 0.2,
-        "theta": 0.1
+        "theta": 0.0
     },
     "init_state": {
         "x": 0.0,

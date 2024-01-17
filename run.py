@@ -47,6 +47,8 @@ def simu(args):
     data_msg = Data()
     num_frames = int(simulation_duration / ctrl_dt)
     for i in range(num_frames):
+        # Assuming Full-state is known
+        # TODO: May add observer to estimate the full-state
         nmpc.control(state, target, force)
         
         new_frame = nmpc.get_frame_msg()

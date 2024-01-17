@@ -40,7 +40,9 @@ make -j4
 
 How to run the simulation
 
-()
+```
+python3 run.py --save_gif
+```
 
 ## System Models
 

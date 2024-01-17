@@ -37,6 +37,10 @@ def vis_data(data_msg, dt, save_dir="", save_gif=False):
                         duration=dt*1000)
 
 def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
+    # set visualization time step
+    vis_dt = 0.1    # [s]
+    vis_gap = int(vis_dt / ctrl_dt)
+
     frames_dir = os.path.join(result_dir, "frames")
     if not os.path.exists(frames_dir):
         os.makedirs(frames_dir)
@@ -84,6 +88,9 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         theta_hp = frame.horizon.theta
         dtheta_hp = frame.horizon.dtheta
         force_hp = frame.horizon.force
+
+        if i % vis_gap != 0:
+            continue    # skip if not visualization time step
 
         plt.clf()
         plt.suptitle(f"Time = {frame.time:.2f} [s]")
@@ -146,4 +153,5 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         plt.grid(True)
 
         plt.savefig(os.path.join(frames_dir, f"{i}.png"))
-    make_gif(frames_dir, os.path.join(result_dir, "plots.gif"), ctrl_dt)
+
+    make_gif(frames_dir, os.path.join(result_dir, "plots.gif"), vis_dt)
