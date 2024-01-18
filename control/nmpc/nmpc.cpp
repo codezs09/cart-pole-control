@@ -32,13 +32,13 @@ void Nmpc::_SerializedFrameMsgToCString() {
   //           << ", theta = " << frame_.theta()
   //           << ", dtheta = " << frame_.dtheta()
   //           << ", force = " << frame_.force() << std::endl;
-  // for (size_t i = 0; i < frame_.horizon().t_size(); i++) {
-  //   std::cout << "t = " << frame_.horizon().t(i)
-  //             << ", x = " << frame_.horizon().x(i)
-  //             << ", dx = " << frame_.horizon().dx(i)
-  //             << ", theta = " << frame_.horizon().theta(i)
-  //             << ", dtheta = " << frame_.horizon().dtheta(i)
-  //             << ", force = " << frame_.horizon().force(i) << std::endl;
+  // for (size_t i = 0; i < frame_.mpc_horizon().t_size(); i++) {
+  //   std::cout << "t = " << frame_.mpc_horizon().t(i)
+  //             << ", x = " << frame_.mpc_horizon().x(i)
+  //             << ", dx = " << frame_.mpc_horizon().dx(i)
+  //             << ", theta = " << frame_.mpc_horizon().theta(i)
+  //             << ", dtheta = " << frame_.mpc_horizon().dtheta(i)
+  //             << ", force = " << frame_.mpc_horizon().force(i) << std::endl;
   // }
 
   // // Debug: serialized back to protobuf message and test if fields are
@@ -49,13 +49,13 @@ void Nmpc::_SerializedFrameMsgToCString() {
   //           << ", theta = " << frame2.theta()
   //           << ", dtheta = " << frame2.dtheta()
   //           << ", force = " << frame2.force() << std::endl;
-  // for (size_t i = 0; i < frame2.horizon().t_size(); i++) {
-  //   std::cout << "FRAME2: t = " << frame2.horizon().t(i)
-  //             << ", x = " << frame2.horizon().x(i)
-  //             << ", dx = " << frame2.horizon().dx(i)
-  //             << ", theta = " << frame2.horizon().theta(i)
-  //             << ", dtheta = " << frame2.horizon().dtheta(i)
-  //             << ", force = " << frame2.horizon().force(i) << std::endl;
+  // for (size_t i = 0; i < frame2.mpc_horizon().t_size(); i++) {
+  //   std::cout << "FRAME2: t = " << frame2.mpc_horizon().t(i)
+  //             << ", x = " << frame2.mpc_horizon().x(i)
+  //             << ", dx = " << frame2.mpc_horizon().dx(i)
+  //             << ", theta = " << frame2.mpc_horizon().theta(i)
+  //             << ", dtheta = " << frame2.mpc_horizon().dtheta(i)
+  //             << ", force = " << frame2.mpc_horizon().force(i) << std::endl;
   // }
 }
 

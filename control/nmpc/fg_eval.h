@@ -18,8 +18,8 @@ class FG_eval {
   FG_eval() = delete;
   FG_eval(json super_param, json control_param)
       : super_param_(super_param), control_param_(control_param) {
-    hp_ = control_param_["hp"];
-    hc_ = control_param_["hc"];
+    hp_ = control_param_["nmpc_cfg"]["hp"];
+    hc_ = control_param_["nmpc_cfg"]["hc"];
   }
 
   void LoadState(const std::vector<double>& state,

@@ -56,7 +56,8 @@ void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
   // update
   ts_val->resize(hp_);
   for (size_t i = 0; i < hp_; i++) {
-    ts_val->at(i) = i * static_cast<double>(control_param_["mpc_dt"]);
+    ts_val->at(i) =
+        i * static_cast<double>(control_param_["nmpc_cfg"]["mpc_dt"]);
   }
 
   us_val->assign(hp_, outputs_val[hc_ - 1]);
@@ -108,16 +109,16 @@ void FG_eval::_UpdateADStateSequence(const ADvector& vars, ADvector* us,
   dthetas->resize(hp_);
 
   // control parameters
-  const double dt = control_param_["mpc_dt"];
+  const double dt = control_param_["nmpc_cfg"]["mpc_dt"];
 
   // model parameters (based on knowledge from control side, may have errors
   // compared to trueth)
-  const double M = control_param_["mass_cart"];
-  const double b = control_param_["damping_cart"];
-  const double m = control_param_["mass_pole"];
-  const double I = control_param_["inertia_pole"];
-  const double l = control_param_["length_com_pole"];
-  const double g = control_param_["gravity"];
+  const double M = control_param_["model_param"]["mass_cart"];
+  const double b = control_param_["model_param"]["damping_cart"];
+  const double m = control_param_["model_param"]["mass_pole"];
+  const double I = control_param_["model_param"]["inertia_pole"];
+  const double l = control_param_["model_param"]["length_com_pole"];
+  const double g = control_param_["model_param"]["gravity"];
 
   // given states
   const double x0 = state_[0];
@@ -146,7 +147,7 @@ void FG_eval::_UpdateADStateSequence(const ADvector& vars, ADvector* us,
       F = (*us)[hc_ - 1];
     }
 
-    // dynamics, check `model.py` for equation details.
+    // dynamics, check `plant.py` for equation details.
     CppAD::AD<double> ddx =
         ((I + m * l * l) *
              (F - b * dx + m * l * dtheta * dtheta * CppAD::sin(theta)) -
@@ -180,10 +181,10 @@ void FG_eval::_UpdateADCosts(const ADvector& vars, const ADvector& us,
                              CppAD::AD<double>* cost_theta,
                              CppAD::AD<double>* cost_u,
                              CppAD::AD<double>* cost_du) {
-  const double q_x = control_param_["Qx"];
-  const double q_th = control_param_["Qtheta"];
-  const double r_u = control_param_["R_u"];
-  const double r_du = control_param_["R_du"];
+  const double q_x = control_param_["nmpc_cfg"]["Qx"];
+  const double q_th = control_param_["nmpc_cfg"]["Qtheta"];
+  const double r_u = control_param_["nmpc_cfg"]["R_u"];
+  const double r_du = control_param_["nmpc_cfg"]["R_du"];
 
   const double x_r = target_[0];
   const double theta_r = target_[1];

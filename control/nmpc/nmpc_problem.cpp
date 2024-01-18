@@ -24,8 +24,8 @@ void NmpcProblem::Solve(const std::vector<double>& state,
                         const std::vector<double>& target, double last_control,
                         cart_pole::Frame* frame) {
   bool ok = true;
-  const size_t hc = control_param_["hc"];
-  const size_t hp = control_param_["hp"];
+  const size_t hc = control_param_["nmpc_cfg"]["hc"];
+  const size_t hp = control_param_["nmpc_cfg"]["hp"];
 
   size_t n_vars = hc;
   Dvector vars(n_vars);
@@ -79,15 +79,15 @@ void NmpcProblem::_UpdateResults(
                                  &thetas_val, &dthetas_val);
 
   frame->set_force(us_val[0]);
-  frame->clear_horizon();
-  auto horizon = frame->mutable_horizon();
+  frame->clear_mpc_horizon();
+  auto mpc_horizon = frame->mutable_mpc_horizon();
 
-  horizon->mutable_t()->Add(ts_val.begin(), ts_val.end());
-  horizon->mutable_x()->Add(xs_val.begin(), xs_val.end());
-  horizon->mutable_dx()->Add(dxs_val.begin(), dxs_val.end());
-  horizon->mutable_theta()->Add(thetas_val.begin(), thetas_val.end());
-  horizon->mutable_dtheta()->Add(dthetas_val.begin(), dthetas_val.end());
-  horizon->mutable_force()->Add(us_val.begin(), us_val.end());
+  mpc_horizon->mutable_t()->Add(ts_val.begin(), ts_val.end());
+  mpc_horizon->mutable_x()->Add(xs_val.begin(), xs_val.end());
+  mpc_horizon->mutable_dx()->Add(dxs_val.begin(), dxs_val.end());
+  mpc_horizon->mutable_theta()->Add(thetas_val.begin(), thetas_val.end());
+  mpc_horizon->mutable_dtheta()->Add(dthetas_val.begin(), dthetas_val.end());
+  mpc_horizon->mutable_force()->Add(us_val.begin(), us_val.end());
 
   // fill value of costs
   double cost_x_val, cost_theta_val, cost_u_val, cost_du_val;
@@ -133,7 +133,8 @@ void NmpcProblem::_SetVariableBounds(Dvector* vars_lowerbound,
   const double force_rate_limit =
       std::fabs(static_cast<double>(control_param_["force_rate_limit"]));
   const double delta_u_limit =
-      force_rate_limit * static_cast<double>(control_param_["mpc_dt"]);
+      force_rate_limit *
+      static_cast<double>(control_param_["nmpc_cfg"]["mpc_dt"]);
 
   for (size_t i = 0; i < vars_lowerbound->size(); ++i) {
     (*vars_lowerbound)[i] = -delta_u_limit;
@@ -143,8 +144,8 @@ void NmpcProblem::_SetVariableBounds(Dvector* vars_lowerbound,
 
 void NmpcProblem::_SetConstraintsBounds(Dvector* constraints_lowerbound,
                                         Dvector* constraints_upperbound) {
-  const size_t hp = control_param_["hp"];
-  const size_t hc = control_param_["hc"];
+  const size_t hp = control_param_["nmpc_cfg"]["hp"];
+  const size_t hc = control_param_["nmpc_cfg"]["hc"];
   const double force_limit = control_param_["force_limit"];
   const double theta_limit = control_param_["theta_limit"];
 

@@ -7,13 +7,13 @@ import argparse
 
 from utils.utils import load_json, load_data, save_data
 from vis.vis_data import vis_data, plot_data_frames
-from model.model import Model
+from system.plant import Plant
 from control.nmpc import NMPC
 from proto.proto_gen.data_pb2 import Data, Frame
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 RESULT_DIR = os.path.join(SCRIPT_DIR, "result")
-MODEL_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/model_param.json")
+PLANT_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/plant_param.json")
 SUPER_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/super_param.json")
 CONTROL_PARAM_PATH = os.path.join(SCRIPT_DIR, "config/control_param.json")
 
@@ -31,6 +31,20 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def get_controller():
+    ctrl_param = load_json(CONTROL_PARAM_PATH)
+    type = ctrl_param["type"]
+
+    if type == "NMPC":
+        return NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
+    elif type == "LMPC":
+        return None # TODO
+    elif type == "LQR":
+        return None # TODO
+    else:
+        print("Error: invalid controller type arg: ", type)
+        return None
+
 def simu(args):
     ctrl_dt = super_param["ctrl_time_step"]    # [s], time step of ctrl ZOH
     simulation_duration = super_param["simulation_duration"]  # [s]
@@ -41,24 +55,24 @@ def simu(args):
     force = super_param["init_state"]["force"]  # [N]
 
     time = 0.0
-    model = Model(MODEL_PARAM_PATH)
-    nmpc = NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
-    model.set_initial_state(state)
+    plant = Plant(PLANT_PARAM_PATH)
+    controller = get_controller()
+    plant.set_initial_state(state)
     data_msg = Data()
     num_frames = int(simulation_duration / ctrl_dt)
     for i in range(num_frames):
         # Assuming Full-state is known
         # TODO: May add observer to estimate the full-state
-        nmpc.control(state, target, force)
+        controller.control(state, target, force)
         
-        new_frame = nmpc.get_frame_msg()
+        new_frame = controller.get_frame_msg()
         new_frame.id = i    # set frame_id and time
         new_frame.time = time
         data_msg.frames.add().CopyFrom(new_frame)
 
         # update
         force = new_frame.force
-        state = model.step(force, ctrl_dt)
+        state = plant.step(force, ctrl_dt)
         time += ctrl_dt
 
         print("frame_id: ", new_frame.id, ", time: ", new_frame.time, ", force: ", new_frame.force, ", state: ", state)

@@ -2,12 +2,12 @@
 import numpy as np
 from math import sin, cos
 
+from system.rk4step import rk4step
 from utils.utils import load_json
-from model.rk4step import rk4step
 
-class Model:
-    def __init__(self, mdl_param_path):
-        self._mdl_param = load_json(mdl_param_path)
+class Plant:
+    def __init__(self, plant_param_path):
+        self._plant_param = load_json(plant_param_path)
         self._state = np.array([0.0, 0.0, 0.0, 0.0])  # [x, x_dot, psi, psi_dot]
 
     def set_initial_state(self, state):
@@ -19,7 +19,7 @@ class Model:
         while (t < duration):
             dt = min(t_step, duration - t)
             self._state = rk4step(self._dynamic_function, self._state, dt, \
-                                  force, self._mdl_param)
+                                  force, self._plant_param)
             t += dt
         return self._state
 
@@ -34,13 +34,13 @@ class Model:
     """
     def _dynamic_function(self, state, *args):
         F = args[0]
-        mdl_param = args[1]
-        M = mdl_param['mass_cart']
-        m = mdl_param['mass_pole']
-        b = mdl_param['damping_cart']
-        l = mdl_param['length_com_pole']
-        I = mdl_param['inertia_pole']
-        g = mdl_param['gravity']
+        plant_param = args[1]
+        M = plant_param['mass_cart']
+        m = plant_param['mass_pole']
+        b = plant_param['damping_cart']
+        l = plant_param['length_com_pole']
+        I = plant_param['inertia_pole']
+        g = plant_param['gravity']
 
         x = state[0]
         dx = state[1]
@@ -60,7 +60,7 @@ class Model:
     
 
 """
-For test purpose. To test the script, run "python3 model.py".
+For test purpose. To test the script, run "python3 plant.py".
 """
 if __name__=="__main__":
     import os
@@ -79,10 +79,10 @@ if __name__=="__main__":
 
     def test():
         dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        mdl_param_path = os.path.join(dir, "config/model_param.json")
-        model = Model(mdl_param_path)
+        plant_param_path = os.path.join(dir, "config/plant_param.json")
+        plant = Plant(plant_param_path)
         state = np.array([-1.0, 0.0, 0.0, 0.0])
-        model.set_initial_state(state)
+        plant.set_initial_state(state)
         force = 0.05    # [N]
         dt = 0.1
         i = 0
@@ -93,7 +93,7 @@ if __name__=="__main__":
                 env.render()
                 time.sleep(dt)
 
-            state = model.step(force, dt)
+            state = plant.step(force, dt)
             print("#", i, ", t=", t, "[s], state: ", state)
             i += 1
             t += dt

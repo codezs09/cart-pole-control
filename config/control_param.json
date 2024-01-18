@@ -1,18 +1,29 @@
 {
-    "mpc_dt": 0.02,
-    "hp": 50,
-    "hc": 50,
-    "Qx": 1.0,
-    "Qtheta": 10.0,
-    "R_u": 0.0,
-    "R_du": 100.0,
+    "type": "NMPC",
+    "model_param": {
+        "mass_cart": 0.5,
+        "mass_pole": 0.2,
+        "damping_cart": 0.1,
+        "length_com_pole": 0.3,
+        "inertia_pole": 0.006,
+        "gravity": 9.81
+    },
+    "nmpc_cfg": {
+        "mpc_dt": 0.02,
+        "hp": 50,
+        "hc": 50,
+        "Qx": 1.0,
+        "Qtheta": 10.0,
+        "R_u": 0.0,
+        "R_du": 100.0
+    },
+    "lqr_cfg": {
+        "Qx": 1.0,
+        "Qtheta": 10.0,
+        "R_u": 0.0,
+        "R_du": 100.0
+    },
     "force_limit": 0.5,
     "force_rate_limit": 2.0,
-    "theta_limit": 0.78,
-    "mass_cart": 0.5,
-    "mass_pole": 0.2,
-    "damping_cart": 0.1,
-    "length_com_pole": 0.3,
-    "inertia_pole": 0.006,
-    "gravity": 9.81
+    "theta_limit": 0.78
 }

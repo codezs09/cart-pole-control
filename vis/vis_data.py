@@ -82,12 +82,12 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         cost_du_past.append(frame.costs.cost_du)
         status_past.append(frame.status)
 
-        t_hp = [frame.time + t for t in frame.horizon.t]
-        x_hp = frame.horizon.x
-        dx_hp = frame.horizon.dx
-        theta_hp = frame.horizon.theta
-        dtheta_hp = frame.horizon.dtheta
-        force_hp = frame.horizon.force
+        t_hp = [frame.time + t for t in frame.mpc_horizon.t]
+        x_hp = frame.mpc_horizon.x
+        dx_hp = frame.mpc_horizon.dx
+        theta_hp = frame.mpc_horizon.theta
+        dtheta_hp = frame.mpc_horizon.dtheta
+        force_hp = frame.mpc_horizon.force
 
         if i % vis_gap != 0:
             continue    # skip if not visualization time step
@@ -96,8 +96,9 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         plt.suptitle(f"Time = {frame.time:.2f} [s]")
         ax1 = plt.subplot(331)
         plt.plot(t_past, x_past, 'b-', label='past')
-        plt.plot(t_hp, x_hp, 'rx', label='hp')
-        plt.plot([t_hp[0], t_hp[-1]], [x_ref, x_ref], 'g--', label='target')
+        if len(t_hp) > 0:
+            plt.plot(t_hp, x_hp, 'rx', label='hp')
+            plt.plot([t_hp[0], t_hp[-1]], [x_ref, x_ref], 'g--', label='target')
         plt.xlabel('time [s]')
         plt.ylabel('x [m]')
         plt.grid(True)
@@ -105,8 +106,9 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
 
         plt.subplot(332,sharex=ax1)
         plt.plot(t_past, np.array(theta_past)*180.0/pi, 'b-', label='past')
-        plt.plot(t_hp, np.array(theta_hp)*180.0/pi, 'rx', label='hp')
-        plt.plot([t_hp[0], t_hp[-1]], [theta_ref*180.0/pi for i in range(2)], 'g--', label='target')
+        if len(t_hp) > 0:
+            plt.plot(t_hp, np.array(theta_hp)*180.0/pi, 'rx', label='hp')
+            plt.plot([t_hp[0], t_hp[-1]], [theta_ref*180.0/pi for i in range(2)], 'g--', label='target')
         plt.xlabel('time [s]')
         plt.ylabel('theta [deg]')
         plt.grid(True)
@@ -120,7 +122,8 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         
         plt.subplot(334,sharex=ax1)
         plt.plot(t_past, dx_past, 'b-', label='past')
-        plt.plot(t_hp, dx_hp, 'rx', label='hp')
+        if len(t_hp) > 0:
+            plt.plot(t_hp, dx_hp, 'rx', label='hp')
         plt.xlabel('time [s]')
         plt.ylabel('x_dot [m/s]')
         plt.grid(True)
@@ -128,7 +131,8 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
 
         plt.subplot(335,sharex=ax1)
         plt.plot(t_past, np.array(dtheta_past)*180.0/pi, 'b-', label='past')
-        plt.plot(t_hp, np.array(dtheta_hp)*180.0/pi, 'rx', label='hp')
+        if len(t_hp) > 0:
+            plt.plot(t_hp, np.array(dtheta_hp)*180.0/pi, 'rx', label='hp')
         plt.xlabel('time [s]')
         plt.ylabel('theta_dot [m/s]')
         plt.grid(True)
@@ -147,11 +151,13 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
 
         plt.subplot(337,sharex=ax1)
         plt.plot(t_past, force_past, 'b-', label='past')
-        plt.plot(t_hp, force_hp, 'rx', label='hp')
+        if len(t_hp) > 0:
+            plt.plot(t_hp, force_hp, 'rx', label='hp')
         plt.xlabel('time [s]')
         plt.ylabel('force [N]')
         plt.grid(True)
-
+        plt.legend()
+        
         plt.savefig(os.path.join(frames_dir, f"{i}.png"))
 
     make_gif(frames_dir, os.path.join(result_dir, "plots.gif"), vis_dt)

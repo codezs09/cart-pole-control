@@ -5,15 +5,15 @@ import ctypes
 import numpy as np
 
 from proto.proto_gen.data_pb2 import Frame
-
+from control.control_api import ControlAPI
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-NMPC_CPP_LIB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), "build/control/libnmpc.so")
+NMPC_CPP_LIB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), "build/control/nmpc/libnmpc.so")
 NMPC_CPP_LIB = ctypes.CDLL(NMPC_CPP_LIB_PATH)
 
 sys.path.append('/home/deeproute/Projects/nmpc-cart-pole/build/control')
 
-class NMPC:
+class NMPC(ControlAPI):
     def __init__(self, super_param_path, control_param_path):
         self._create_nmpc(super_param_path, control_param_path)
 
@@ -53,10 +53,10 @@ class NMPC:
         frame_msg.ParseFromString(serialized_frame_msg)
 
         # print(f"PYTHON frame: x={frame_msg.x:.6f}, dx={frame_msg.dx:.6f}, theta={frame_msg.theta:.6f}, dtheta={frame_msg.dtheta:.6f}, force={frame_msg.force:.6f}")
-        # horizon = frame_msg.horizon
-        # for i in range(len(horizon.t)):
-        #     print(f"PYTHON horizon: t={horizon.t[i]:.6f}, x={horizon.x[i]:.6f}, dx={horizon.dx[i]:.6f}, \
-        #           theta={horizon.theta[i]:.6f}, dtheta={horizon.dtheta[i]:.6f}, force={horizon.force[i]:.6f}")
+        # mpc_horizon = frame_msg.mpc_horizon
+        # for i in range(len(mpc_horizon.t)):
+        #     print(f"PYTHON mpc_horizon: t={mpc_horizon.t[i]:.6f}, x={mpc_horizon.x[i]:.6f}, dx={mpc_horizon.dx[i]:.6f}, \
+        #           theta={mpc_horizon.theta[i]:.6f}, dtheta={mpc_horizon.dtheta[i]:.6f}, force={mpc_horizon.force[i]:.6f}")
             
         return frame_msg
 
