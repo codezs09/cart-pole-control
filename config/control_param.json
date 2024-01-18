@@ -15,13 +15,13 @@
         "Qx": 1.0,
         "Qtheta": 10.0,
         "R_u": 0.0,
-        "R_du": 100.0
+        "R_du": 0.04
     },
     "lqr_cfg": {
         "Qx": 1.0,
         "Qtheta": 10.0,
         "R_u": 0.0,
-        "R_du": 100.0
+        "R_du": 0.04
     },
     "force_limit": 0.5,
     "force_rate_limit": 2.0,

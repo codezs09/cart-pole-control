@@ -184,7 +184,11 @@ void FG_eval::_UpdateADCosts(const ADvector& vars, const ADvector& us,
   const double q_x = control_param_["nmpc_cfg"]["Qx"];
   const double q_th = control_param_["nmpc_cfg"]["Qtheta"];
   const double r_u = control_param_["nmpc_cfg"]["R_u"];
-  const double r_du = control_param_["nmpc_cfg"]["R_du"];
+  const double r_du =
+      control_param_["nmpc_cfg"]["R_du"];  // weight for rate w.r.t [s]
+
+  double dt = control_param_["nmpc_cfg"]["mpc_dt"];
+  double r_du_step = r_du / dt / dt;
 
   const double x_r = target_[0];
   const double theta_r = target_[1];
@@ -195,7 +199,7 @@ void FG_eval::_UpdateADCosts(const ADvector& vars, const ADvector& us,
   *cost_du = 0.0;
   for (size_t i = 0; i < hc_; i++) {
     *cost_u += r_u * CppAD::pow(us[i], 2);
-    *cost_du += r_du * CppAD::pow(vars[i], 2);
+    *cost_du += r_du_step * CppAD::pow(vars[i], 2);
   }
   for (size_t i = 0; i < hp_; ++i) {
     *cost_x += q_x * CppAD::pow(xs[i] - x_r, 2);
