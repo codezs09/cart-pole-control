@@ -14,7 +14,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(utils)
 add_subdirectory(proto)
-add_subdirectory(control)
+add_subdirectory(controller)
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/

@@ -20,7 +20,7 @@ def load_data(file_path):
     data_msg.ParseFromString(serialized_data_msg)
     return data_msg
 
-def make_gif(frames_dir, export_path, dt):
+def make_gif(frames_dir, export_path, dt, infinite_loop=False):
     image_files = [f for f in os.listdir(frames_dir) if f.endswith('.png')]
     image_files.sort(key=lambda x: int(x.split('.')[0]))
 
@@ -29,4 +29,5 @@ def make_gif(frames_dir, export_path, dt):
         image_path = os.path.join(frames_dir, image_file)
         images.append(imageio.imread(image_path))
 
-    imageio.mimsave(export_path, images, duration=dt, loop=0)
+    loop = 0 if infinite_loop else 1
+    imageio.mimsave(export_path, images, duration=dt, loop=loop)

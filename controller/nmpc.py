@@ -5,13 +5,13 @@ import ctypes
 import numpy as np
 
 from proto.proto_gen.data_pb2 import Frame
-from control.control_api import ControlAPI
+from controller.control_api import ControlAPI
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-NMPC_CPP_LIB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), "build/control/nmpc/libnmpc.so")
+NMPC_CPP_LIB_PATH = os.path.join(os.path.dirname(SCRIPT_DIR), "build/controller/nmpc/libnmpc.so")
 NMPC_CPP_LIB = ctypes.CDLL(NMPC_CPP_LIB_PATH)
 
-sys.path.append('/home/deeproute/Projects/nmpc-cart-pole/build/control')
+# sys.path.append('/home/deeproute/Projects/nmpc-cart-pole/build/controller')
 
 class NMPC(ControlAPI):
     def __init__(self, super_param_path, control_param_path):

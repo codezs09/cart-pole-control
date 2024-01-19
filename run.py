@@ -8,7 +8,8 @@ import argparse
 from utils.utils import load_json, load_data, save_data
 from vis.vis_data import vis_data, plot_data_frames
 from system.plant import Plant
-from control.nmpc import NMPC
+from controller.nmpc import NMPC
+from controller.lqr import LQR
 from proto.proto_gen.data_pb2 import Data, Frame
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -40,7 +41,7 @@ def get_controller():
     elif type == "LMPC":
         return None # TODO
     elif type == "LQR":
-        return None # TODO
+        return LQR(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     else:
         print("Error: invalid controller type arg: ", type)
         return None

@@ -34,7 +34,8 @@ def vis_data(data_msg, dt, save_dir="", save_gif=False):
     if save_gif:
         imageio.mimsave(os.path.join(save_dir, 'cartpole.gif'), \
                         frames, \
-                        duration=dt*1000)
+                        duration=dt*1000,
+                        loop=0)
 
 def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
     # set visualization time step
