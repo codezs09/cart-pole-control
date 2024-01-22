@@ -83,7 +83,7 @@ class LQR(ControlAPI):
                       [0.0], \
                       [-m*l/p] \
                      ])
-        
+
         lqr_cfg = self.control_param_["lqr_cfg"]
         Qx = lqr_cfg["Qx"]
         Qtheta = lqr_cfg["Qtheta"]
@@ -92,13 +92,40 @@ class LQR(ControlAPI):
         Q = np.diag([Qx, 0.0, Qtheta, 0.0])
         R = np.diag([R_u])
 
-        print("sys.path", sys.path)
-        K, S, E = control.lqr(Ac, Bc, Q, R)
+        FLG_AUG = True  # NOTE: whether to use Augmented LQR with control rate penality
+        if abs(R_du) < 1.0e-6:
+            FLG_AUG = False # avoid solver fail due to singularity
+        
+        if not FLG_AUG:
+            K, S, E = control.lqr(Ac, Bc, Q, R)
+            x = np.array([[state[0] - target[0]],
+                        [state[1]],
+                        [state[2] - target[1]],
+                        [state[3]]])
+            u = -np.matmul(K, x)
+            u = u.item()
+        else:
+            # Augmented with state [x, u], control [du]
+            Ac_aug = np.block([[Ac, Bc], \
+                                [np.zeros((1, 5))]])
+            Bc_aug = np.array([[0.0], \
+                                [0.0], \
+                                [0.0], \
+                                [0.0], \
+                                [1.0]])
+            Q_aug = np.block([[Q, np.zeros((4, 1))], \
+                            [np.zeros((1, 4)), R_u]])
+            R_aug = np.diag([R_du])
 
-        x = np.array([[state[0] - target[0]],
-                      [state[1]],
-                      [state[2] - target[1]],
-                      [state[3]]])
-        u = -np.matmul(K, x)
-        return u.item()
+            K, S, E = control.lqr(Ac_aug, Bc_aug, Q_aug, R_aug)
+            x_aug = np.array([[state[0] - target[0]],
+                            [state[1]],
+                            [state[2] - target[1]],
+                            [state[3]],
+                            [last_control]])
+            u_aug = -np.matmul(K, x_aug)
+            u_agug = u_aug.item()
+            u = last_control + u_agug * self.super_param_["ctrl_time_step"]
+
+        return u
     

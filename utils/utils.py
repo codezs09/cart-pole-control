@@ -20,7 +20,7 @@ def load_data(file_path):
     data_msg.ParseFromString(serialized_data_msg)
     return data_msg
 
-def make_gif(frames_dir, export_path, dt, infinite_loop=False):
+def make_gif(frames_dir, export_path, dt, infinite_loop=True):
     image_files = [f for f in os.listdir(frames_dir) if f.endswith('.png')]
     image_files.sort(key=lambda x: int(x.split('.')[0]))
 

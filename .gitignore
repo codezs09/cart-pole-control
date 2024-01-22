@@ -2,5 +2,5 @@
 build/*
 proto/proto_gen/*
 *.bin
-*.gif
+result/*.gif
 *.png
