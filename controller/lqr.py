@@ -17,6 +17,12 @@ class LQR(ControlAPI):
         self.super_param_ = load_json(super_param_path)
         self.control_param_ = load_json(control_param_path)
         self.frame_msg_ = Frame()
+        
+        lqr_cfg = self.control_param_["lqr_cfg"]
+        if lqr_cfg["use_finite_lqr"]:
+            print(f"Finite LQR used (DARE solver): hp={lqr_cfg['hp']}, dt={lqr_cfg['lqr_dt']} !")
+        else:
+            print("Infinite LQR used !")
 
     def control(self, state, target, last_control):
         u_lqr = self._lqr_solve(state, target, last_control)
@@ -89,19 +95,28 @@ class LQR(ControlAPI):
         Qtheta = lqr_cfg["Qtheta"]
         R_u = lqr_cfg["R_u"]
         R_du = lqr_cfg["R_du"]
+
         Q = np.diag([Qx, 0.0, Qtheta, 0.0])
         R = np.diag([R_u])
+        x = np.array([[state[0] - target[0]],
+                    [state[1]],
+                    [state[2] - target[1]],
+                    [state[3]]])
 
-        FLG_AUG = True  # NOTE: whether to use Augmented LQR with control rate penality
+        if lqr_cfg["use_finite_lqr"]:
+            u = self._finite_lqr_solver(x, Ac, Bc, Q, R, R_du, last_control, \
+                                   lqr_cfg["hp"], lqr_cfg["lqr_dt"])
+        else:
+            u = self._infinite_lqr_solver(x, Ac, Bc, Q, R, R_du, last_control)
+        return u
+
+    def _infinite_lqr_solver(self, x, Ac, Bc, Q, R, R_du, last_control):
+        is_lqr_aug = True  # NOTE: if True, use Augmented LQR with control rate penality
         if abs(R_du) < 1.0e-6:
-            FLG_AUG = False # avoid solver fail due to singularity
+            is_lqr_aug = False # avoid solver fail due to singularity
         
-        if not FLG_AUG:
+        if not is_lqr_aug:
             K, S, E = control.lqr(Ac, Bc, Q, R)
-            x = np.array([[state[0] - target[0]],
-                        [state[1]],
-                        [state[2] - target[1]],
-                        [state[3]]])
             u = -np.matmul(K, x)
             u = u.item()
         else:
@@ -114,18 +129,17 @@ class LQR(ControlAPI):
                                 [0.0], \
                                 [1.0]])
             Q_aug = np.block([[Q, np.zeros((4, 1))], \
-                            [np.zeros((1, 4)), R_u]])
+                            [np.zeros((1, 4)), R]])
             R_aug = np.diag([R_du])
 
             K, S, E = control.lqr(Ac_aug, Bc_aug, Q_aug, R_aug)
-            x_aug = np.array([[state[0] - target[0]],
-                            [state[1]],
-                            [state[2] - target[1]],
-                            [state[3]],
-                            [last_control]])
+            x_aug = np.block([[x], \
+                              [last_control]])
             u_aug = -np.matmul(K, x_aug)
             u_agug = u_aug.item()
             u = last_control + u_agug * self.super_param_["ctrl_time_step"]
-
         return u
+    
+    def _finite_lqr_solver(self, x, Ac, Bc, Q, R, R_du, last_control, hp, dt):
+        return -1
     

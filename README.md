@@ -66,7 +66,13 @@ Settings of the controller type and parameter values are in the json file, `conf
 }
 
 "lqr_cfg": {        // Control parameters for LQR, active when "type" is "LQR"
-    ...
+    "Qx": 5000.0,       // Weight for tracking error of x
+    "Qtheta": 100.0,    // Weight for tracking error of theta
+    "R_u": 1.0,         // Weight for control effort (force)
+    "R_du": 0.1,        // Weight for control rate (force rate)
+    "use_finite_lqr": true,  // If true, use finite horizon LQR solver; Otherwise, use infinite horizon LQR solver
+    "hp": 50,           // Horizon, valid only if `is_finite` is true
+    "lqr_dt": 0.02      // DARE step size, valid only if `is_finite` is true; Generally, `lqr_dt` = `ctrl_time_step`
 }
 
 ```

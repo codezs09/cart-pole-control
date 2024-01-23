@@ -16,6 +16,7 @@ NMPC_CPP_LIB = ctypes.CDLL(NMPC_CPP_LIB_PATH)
 class NMPC(ControlAPI):
     def __init__(self, super_param_path, control_param_path):
         self._create_nmpc(super_param_path, control_param_path)
+        print("Nonlinear Model Predictive Controller (NMPC) used!")
 
     def _create_nmpc(self, super_param_path, control_param_path):
         super_param_path_s = ctypes.create_string_buffer(super_param_path.encode('utf-8'))
