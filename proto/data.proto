@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package cart_pole;
 
-message Horizon {  // MPC Predicted mpc_horizon
-  repeated double t = 1;
+message Horizon {         // MPC Predicted mpc_horizon, length = hp+1
+  repeated double t = 1;  // [0, hp]*dt
   repeated double x = 2;
   repeated double dx = 3;
   repeated double theta = 4;
