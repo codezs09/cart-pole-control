@@ -29,6 +29,10 @@ void FG_eval::operator()(ADvector& fg, const ADvector& vars) {
   }
 }
 
+/**
+ * @brief
+ * sequence [0, 1, 2, ..., hp], length = hp + 1
+ */
 void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
                                      std::vector<double>* ts_val,
                                      std::vector<double>* us_val,
@@ -53,22 +57,34 @@ void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
   CppAD::ADFun<double> fun(vars, outputs);
   std::vector<double> outputs_val = fun.Forward(0, vars_val);
 
-  // update
-  ts_val->resize(hp_);
-  for (size_t i = 0; i < hp_; i++) {
+  ts_val->resize(hp_ + 1);
+  for (size_t i = 0; i < ts_val->size(); i++) {
     ts_val->at(i) =
         i * static_cast<double>(control_param_["nmpc_cfg"]["mpc_dt"]);
   }
 
-  us_val->assign(hp_, outputs_val[hc_ - 1]);
+  us_val->assign(hp_ + 1, outputs_val[hc_ - 1]);
   std::copy(outputs_val.begin(), outputs_val.begin() + hc_, us_val->begin());
 
-  xs_val->assign(outputs_val.begin() + hc_, outputs_val.begin() + hc_ + hp_);
-  dxs_val->assign(outputs_val.begin() + hc_ + hp_,
-                  outputs_val.begin() + hc_ + 2 * hp_);
-  thetas_val->assign(outputs_val.begin() + hc_ + 2 * hp_,
-                     outputs_val.begin() + hc_ + 3 * hp_);
-  dthetas_val->assign(outputs_val.begin() + hc_ + 3 * hp_, outputs_val.end());
+  xs_val->assign(hp_ + 1, 0.0);
+  xs_val->at(0) = state_[0];
+  std::copy(outputs_val.begin() + hc_, outputs_val.begin() + hc_ + hp_,
+            xs_val->begin() + 1);
+
+  dxs_val->assign(hp_ + 1, 0.0);
+  dxs_val->at(0) = state_[1];
+  std::copy(outputs_val.begin() + hc_ + hp_,
+            outputs_val.begin() + hc_ + 2 * hp_, dxs_val->begin() + 1);
+
+  thetas_val->assign(hp_ + 1, 0.0);
+  thetas_val->at(0) = state_[2];
+  std::copy(outputs_val.begin() + hc_ + 2 * hp_,
+            outputs_val.begin() + hc_ + 3 * hp_, thetas_val->begin() + 1);
+
+  dthetas_val->assign(hp_ + 1, 0.0);
+  dthetas_val->at(0) = state_[3];
+  std::copy(outputs_val.begin() + hc_ + 3 * hp_, outputs_val.end(),
+            dthetas_val->begin() + 1);
 }
 
 void FG_eval::GetCostsValues(const std::vector<double>& vars_val,

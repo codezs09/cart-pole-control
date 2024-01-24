@@ -76,7 +76,8 @@ def simu(args):
         state = plant.step(force, ctrl_dt)
         time += ctrl_dt
 
-        print("frame_id: ", new_frame.id, ", time: ", new_frame.time, ", force: ", new_frame.force, ", state: ", state)
+        np.set_printoptions(precision=4)
+        print(f"frame_id: {new_frame.id}, \t time: {new_frame.time:.2f}, \t force: {new_frame.force:.4f}, \t state:", state)
     save_data(data_msg, os.path.join(RESULT_DIR, "data.bin"))
 
 def vis(args):

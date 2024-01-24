@@ -1,0 +1,1 @@
+You can move/copy running results under this directory for later comparison or analysis.  
