@@ -24,7 +24,8 @@
         "R_du": 0.1,
         "use_finite_lqr": false,
         "hp": 50,
-        "lqr_dt": 0.02
+        "lqr_dt": 0.02,
+        "use_dare": true
     },
     "force_limit": 10.0,
     "force_rate_limit": 200.0,

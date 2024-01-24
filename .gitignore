@@ -4,3 +4,9 @@ proto/proto_gen/*
 *.bin
 result/*.gif
 *.png
+
+*.gif
+# # exclusion
+# !data/*
+# !data/*/*
+# !data/*/*/*

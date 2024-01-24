@@ -73,6 +73,7 @@ Settings of the controller type and parameter values are in the json file, `conf
     "use_finite_lqr": true,  // If true, use finite horizon LQR solver; Otherwise, use infinite horizon LQR solver
     "hp": 50,           // Horizon, valid only if `is_finite` is true
     "lqr_dt": 0.02      // DARE step size, valid only if `is_finite` is true; Generally, `lqr_dt` = `ctrl_time_step`
+    "use_dare": true    // For Infinite-Horizon LQR: If true, use DARE solver; Otherwise, use CARE solver
 }
 
 ```

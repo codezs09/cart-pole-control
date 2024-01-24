@@ -135,7 +135,7 @@ def plot_data_frames(data_msg, super_param, ctrl_dt, result_dir):
         if len(t_hp) > 0:
             plt.plot(t_hp, np.array(dtheta_hp)*180.0/pi, 'rx', label='hp')
         plt.xlabel('time [s]')
-        plt.ylabel('theta_dot [m/s]')
+        plt.ylabel('theta_dot [deg/s]')
         plt.grid(True)
         plt.legend()
 
