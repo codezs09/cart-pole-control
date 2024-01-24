@@ -22,7 +22,7 @@
         "Qtheta": 100.0,
         "R_u": 1.0,
         "R_du": 0.1,
-        "use_finite_lqr": true,
+        "use_finite_lqr": false,
         "hp": 50,
         "lqr_dt": 0.02,
         "use_dare": true
