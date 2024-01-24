@@ -5,8 +5,7 @@ proto/proto_gen/*
 result/*.gif
 *.png
 
-*.gif
-# # exclusion
-# !data/*
-# !data/*/*
-# !data/*/*/*
+# exclusion
+!data/*
+!data/*/*
+!data/*/*/*
