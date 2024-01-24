@@ -95,11 +95,6 @@ class LQR(ControlAPI):
         self.frame_msg_.theta = state[2]
         self.frame_msg_.dtheta = state[3]
         self.frame_msg_.force = u
-        # self.frame_msg_.costs.cost_total = cost_total
-        # self.frame_msg_.costs.cost_x = cost_x
-        # self.frame_msg_.costs.cost_theta = cost_theta
-        # self.frame_msg_.costs.cost_u = cost_u
-        # self.frame_msg_.costs.cost_du = cost_du   # TODO: fill in the solvers
         self.frame_msg_.status = True
 
         return u
@@ -180,7 +175,7 @@ class LQR(ControlAPI):
             u_aug = self._ARE_solver_inf(x_aug, Ac_aug, Bc_aug, Q_aug, R_aug, use_dare, dt)
             u = last_control + u_aug * self.super_param_["ctrl_time_step"]
         
-        # TODO: may add cost calculation here
+        # TODO: may add cost calculation here for inifite horizon LQR
 
         return u
     
