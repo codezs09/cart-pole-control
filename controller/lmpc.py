@@ -110,9 +110,12 @@ class LMPC(ControlAPI):
         # QP problem formulation (with/without augment state)
         is_lmpc_aug = True if abs(R_du) > 1.0e-6 else False
         if not is_lmpc_aug:
-            A_tilde, B_tilde, Q_tilde, R_tilde = self._matrix_reorg(Ad, Bd, Q, R, Q, hp, hc)
+            A_tilde, B_tilde, Q_tilde, R_tilde = self._state_matrix_reorg(Ad, Bd, Q, R, Q, hp, hc)
+            H_tilde, H_tilde_lb, H_tilde_ub = self._constraint_matrix_reorg(A_tilde, B_tilde, x0, \
+                                                    h_ineq, h_lb, h_ub, u_lb, u_ub, hp, hc) # no constraint on du
+
             u_list, x_list = self._lmpc_solver(A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, use_qp, \
-                                               h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub)
+                                               H_tilde, H_tilde_lb, H_tilde_ub)
         else:
             # Augmented with state [x, u], control [du]
             Ad_aug = np.block([[Ad, Bd], \
@@ -128,7 +131,11 @@ class LMPC(ControlAPI):
             x0_aug = np.block([[x0], \
                               [last_control]])
             A_tilde_aug, B_tilde_aug, Q_tilde_aug, R_tilde_aug = \
-                self._matrix_reorg(Ad_aug, Bd_aug, Q_aug, R_aug, Q_aug, hp, hc)
+                self._state_matrix_reorg(Ad_aug, Bd_aug, Q_aug, R_aug, Q_aug, hp, hc)
+            H_tilde_aug, H_tilde_lb_aug, H_tilde_ub_aug = self._constraint_matrix_reorg_aug(
+                                                        A_tilde_aug, B_tilde_aug, x0_aug, \
+                                                        h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub, hp, hc)
+            
             u_aug_list, x_aug_list = self._lmpc_solver(A_tilde_aug, B_tilde_aug, \
                                                        Q_tilde_aug, R_tilde_aug, \
                                                         x0_aug, hp, hc, use_qp, \
@@ -172,9 +179,9 @@ class LMPC(ControlAPI):
         return u_list[0]
 
     """
-        Reorganize the matrices to represent Quadratic problem
+        Reorganize the STATE matrices to represent Quadratic problem
     """
-    def _matrix_reorg(self, Ad, Bd, Q, R, Qf, hp, hc, use_qp):
+    def _state_matrix_reorg(self, Ad, Bd, Q, R, Qf, hp, hc):
         n = Ad.shape[0] # state dimension
         m = Bd.shape[1] # control dimension
         
@@ -202,6 +209,50 @@ class LMPC(ControlAPI):
 
         return A_tilde, B_tilde, Q_tilde, R_tilde
     
+    """
+        Reorganize the CONSTRAINT matrices
+    """
+    def _constraint_matrix_reorg(self, A_tilde, B_tilde, x0, h_ineq, h_lb, h_ub, u_lb, u_ub, hp, hc):
+        U_lb = np.array([u_lb for i in range(hc)])
+        U_ub = np.array([u_ub for i in range(hc)])
+
+        h_tilde_ineq = sp.block_diag([h_ineq for i in range(hp)])
+        h_tilde_lb = np.array([h_lb for i in range(hp)])
+        h_tilde_ub = np.array([h_ub for i in range(hp)])
+
+        H_tilde = np.block([[h_tilde_ineq @ B_tilde], [np.eye(hc)]])
+        H_tilde_lb = np.block([[h_tilde_lb - h_tilde_ineq @ A_tilde @ x0], [U_lb]])
+        H_tilde_ub = np.block([[h_tilde_ub - h_tilde_ineq @ A_tilde @ x0], [U_ub]])
+
+        return H_tilde, H_tilde_lb, H_tilde_ub
+
+    """
+        Reorganize the CONSTRAINT matrices (Augmented)
+    """
+    def _constraint_matrix_reorg_aug(self, A_tilde_aug, B_tilde_aug, x0_aug, h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub, hp, hc):
+        # augmented with state [x, u], control [du]
+        n = x0_aug.shape[0] -1  # state dimension
+
+        # du constraints
+        U_lb = np.array([du_lb for i in range(hc)])
+        U_ub = np.array([du_ub for i in range(hc)])
+
+        # h_ineq @ augmented x constraints
+        h_ineq_aug = np.block([[h_ineq, np.zeros((1, 1))],
+                                [np.zeros((1, n)), 1.0]])
+        h_lb_aug = np.block([[h_lb], [u_lb]])
+        h_ub_aug = np.block([[h_ub], [u_ub]])
+
+        h_tilde_ineq = sp.block_diag([h_ineq_aug for i in range(hp)])
+        h_tilde_lb = np.array([h_lb_aug for i in range(hp)])
+        h_tilde_ub = np.array([h_ub_aug for i in range(hp)])
+
+        H_tilde_aug = np.block([[h_tilde_ineq @ B_tilde_aug], [np.eye(hc)]])
+        H_tilde_lb_aug = np.block([[h_tilde_lb - h_tilde_ineq @ A_tilde_aug @ x0_aug], [U_lb]])
+        H_tilde_ub_aug = np.block([[h_tilde_ub - h_tilde_ineq @ A_tilde_aug @ x0_aug], [U_ub]])
+
+        return H_tilde_aug, H_tilde_lb_aug, H_tilde_ub_aug
+
     """
         LMPC solver
     """
@@ -231,12 +282,6 @@ class LMPC(ControlAPI):
     """
     def _lmpc_solver_constrained(self, A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, \
                                 h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub):
-        # TODO: 不建议把 constraints 放这里
-        
-        
-        h_tilde_ineq = sp.block_diag([h_ineq for i in range(hp)])
-        h_tilde_lb = np.array([h_lb for i in range(hp)])
-        h_tilde_ub = np.array([h_ub for i in range(hp)])
 
 
         P = B_tilde.T @ Q_tilde @ B_tilde + R_tilde
