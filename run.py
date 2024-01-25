@@ -39,7 +39,7 @@ def get_controller():
     if type == "NMPC":
         return NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     elif type == "LMPC":
-        return None # TODO
+        return LMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     elif type == "LQR":
         return LQR(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     else:

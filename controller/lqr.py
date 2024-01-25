@@ -30,20 +30,9 @@ class LQR(ControlAPI):
             print("Infinite LQR used !")
 
     def control(self, state, target, last_control):
-        u_lqr = self._lqr_solve(state, target, last_control)
-        
         dt = self.super_param_["ctrl_time_step"]
-        # update costs
-        x_diff = state[0] - target[0]
-        theta_diff = state[2] - target[1]
-        du_lqr = (u_lqr - last_control) / dt
-        lqr_cfg = self.control_param_["lqr_cfg"]
-        cost_x = x_diff * lqr_cfg["Qx"] * x_diff
-        cost_theta = theta_diff * lqr_cfg["Qtheta"] * theta_diff
-        cost_u = u_lqr * lqr_cfg["R_u"] * u_lqr
-        cost_du = du_lqr * lqr_cfg["R_du"] * du_lqr
-        cost_total = cost_x + cost_theta + cost_u + cost_du
-
+        u_lqr = self._lqr_control(state, target, last_control)
+        
         u = u_lqr
         # rate limit
         u_step_limit = dt * self.control_param_["force_rate_limit"]
@@ -68,7 +57,7 @@ class LQR(ControlAPI):
     def get_frame_msg(self):
         return self.frame_msg_
     
-    def _lqr_solve(self, state, target, last_control):
+    def _lqr_control(self, state, target, last_control):
         model_param = self.control_param_['model_param']
         M = model_param['mass_cart']
         m = model_param['mass_pole']
