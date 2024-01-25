@@ -296,11 +296,15 @@ class LMPC(ControlAPI):
         P = B_tilde.T @ Q_tilde @ B_tilde + R_tilde
         q = B_tilde.T @ Q_tilde @ A_tilde @ x0
         
+        P = sp.csc_matrix(P)
+        H_tilde = sp.csc_matrix(H_tilde)
         # OSQP problem formulation: https://osqp.org/docs/index.html
         prob = osqp.OSQP()
         prob.setup(P, q, H_tilde, H_tilde_lb, H_tilde_ub, warm_start=True, verbose=False)
-        U = prob.solve()
-
+        res = prob.solve()
+        
+        U = np.array(res.x)
+        U = U.reshape((hc, 1))
         return U
     
     def _calculate_costs(self, x_list, u_list, du_list=None):
