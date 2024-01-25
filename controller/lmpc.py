@@ -192,9 +192,9 @@ class LMPC(ControlAPI):
         
         B_tilde = np.zeros((n*hp, m*hc))
         B_row_tmp = np.zeros((n, m*hc))
-        B_row_tmp[:, 0:m*hc] = Bd.copy()
+        B_row_tmp[:, 0:m] = Bd.copy()
         for i in range(hp):
-            B_tilde[i*n:(i+1)*n, :] = B_row_tmp
+            B_tilde[i*n:(i+1)*n, :] = B_row_tmp.copy()
             B_row_tmp = A_tmp @ B_row_tmp
             j = min(i+1, hc-1)
             B_row_tmp[:, j*m*hc:(j+1)*m*hc] = Bd.copy()
@@ -212,12 +212,12 @@ class LMPC(ControlAPI):
         Reorganize the CONSTRAINT matrices
     """
     def _constraint_matrix_reorg(self, A_tilde, B_tilde, x0, h_ineq, h_lb, h_ub, u_lb, u_ub, hp, hc):
-        U_lb = np.array([u_lb for i in range(hc)])
-        U_ub = np.array([u_ub for i in range(hc)])
+        U_lb = np.array([[u_lb] for i in range(hc)])
+        U_ub = np.array([[u_ub] for i in range(hc)])
 
         h_tilde_ineq = sp.block_diag([h_ineq for i in range(hp)])
-        h_tilde_lb = np.array([h_lb for i in range(hp)])
-        h_tilde_ub = np.array([h_ub for i in range(hp)])
+        h_tilde_lb = np.array([[h_lb] for i in range(hp)])
+        h_tilde_ub = np.array([[h_ub] for i in range(hp)])
 
         H_tilde = np.block([[h_tilde_ineq @ B_tilde], [np.eye(hc)]])
         H_tilde_lb = np.block([[h_tilde_lb - h_tilde_ineq @ A_tilde @ x0], [U_lb]])
@@ -270,7 +270,7 @@ class LMPC(ControlAPI):
         u_list = [] 
         x_list = []
         for i in range(hp):
-            u_list.append(U[i] if i < hc else U[-1])
+            u_list.append(U[i][0] if i < hc else U[-1][0])
             x_list.append(X[i*n:(i+1)*n])
 
         return u_list, x_list
