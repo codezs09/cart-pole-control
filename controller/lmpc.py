@@ -195,16 +195,16 @@ class LMPC(ControlAPI):
         B_row_tmp[:, 0:m] = Bd.copy()
         for i in range(hp):
             B_tilde[i*n:(i+1)*n, :] = B_row_tmp.copy()
-            B_row_tmp = A_tmp @ B_row_tmp
+            B_row_tmp = Ad @ B_row_tmp
             j = min(i+1, hc-1)
-            B_row_tmp[:, j*m*hc:(j+1)*m*hc] = Bd.copy()
+            B_row_tmp[:, j*m:(j+1)*m] = Bd.copy()
 
         Q_csc = sp.csc_matrix(Q)
         Qf_csc = sp.csc_matrix(Qf)
         Q_tilde = sp.block_diag([Q_csc if i < hp else Qf_csc for i in range(hp)])
 
         R_csc = sp.csc_matrix(R)
-        R_tilde = sp.block_diag([R_csc if i < hp else (hp-hc+1)*R_csc for i in range(hc)])
+        R_tilde = sp.block_diag([R_csc if i < hc else (hp-hc+1)*R_csc for i in range(hc)])
 
         return A_tilde, B_tilde, Q_tilde, R_tilde
     
