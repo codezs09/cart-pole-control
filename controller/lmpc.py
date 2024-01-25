@@ -233,18 +233,22 @@ class LMPC(ControlAPI):
         n = x0_aug.shape[0] -1  # state dimension
 
         # du constraints
-        U_lb = np.array([du_lb for i in range(hc)])
-        U_ub = np.array([du_ub for i in range(hc)])
+        U_lb = np.array([[du_lb] for i in range(hc)])
+        U_ub = np.array([[du_ub] for i in range(hc)])
 
         # h_ineq @ augmented x constraints
         h_ineq_aug = np.block([[h_ineq, np.zeros((1, 1))],
                                 [np.zeros((1, n)), 1.0]])
         h_lb_aug = np.block([[h_lb], [u_lb]])
         h_ub_aug = np.block([[h_ub], [u_ub]])
+        n_ineq = h_ineq_aug.shape[0]
 
         h_tilde_ineq = sp.block_diag([h_ineq_aug for i in range(hp)])
-        h_tilde_lb = np.array([h_lb_aug for i in range(hp)])
-        h_tilde_ub = np.array([h_ub_aug for i in range(hp)])
+        h_tilde_lb = np.zeros((n_ineq*hp, 1))
+        h_tilde_ub = np.zeros((n_ineq*hp, 1))
+        for i in range(hp):
+            h_tilde_lb[i*n_ineq:(i+1)*n_ineq, :] = h_lb_aug
+            h_tilde_ub[i*n_ineq:(i+1)*n_ineq, :] = h_ub_aug
 
         H_tilde_aug = np.block([[h_tilde_ineq @ B_tilde_aug], [np.eye(hc)]])
         H_tilde_lb_aug = np.block([[h_tilde_lb - h_tilde_ineq @ A_tilde_aug @ x0_aug], [U_lb]])
