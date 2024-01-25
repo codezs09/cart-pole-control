@@ -10,6 +10,7 @@ from vis.vis_data import vis_data, plot_data_frames
 from system.plant import Plant
 from controller.nmpc import NMPC
 from controller.lqr import LQR
+from controller.lmpc import LMPC
 from proto.proto_gen.data_pb2 import Data, Frame
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))

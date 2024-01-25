@@ -25,7 +25,7 @@ class LMPC(ControlAPI):
             s = "LMPC (Unconstrained, Analytical Solver): "
         else:
             s = "LMPC (Constrained, QP Solver): "
-        s += f"hp={lmpc_cfg['hp']}, dt={lmpc_cfg['lqr_dt']} !"
+        s += f"hp={lmpc_cfg['hp']}, hc={lmpc_cfg['hc']}, dt={lmpc_cfg['mpc_dt']} !"
         print(s)
 
     def control(self, state, target, last_control):
@@ -139,8 +139,7 @@ class LMPC(ControlAPI):
             u_aug_list, x_aug_list = self._lmpc_solver(A_tilde_aug, B_tilde_aug, \
                                                        Q_tilde_aug, R_tilde_aug, \
                                                         x0_aug, hp, hc, use_qp, \
-                                                        h_ineq, h_lb, h_ub, \
-                                                        u_lb, u_ub, du_lb, du_ub)
+                                                        H_tilde_aug, H_tilde_lb_aug, H_tilde_ub_aug)
             u_list = []     # k = 0, 1, ..., hp-1
             x_list = []     # [x - x_r, dx, theta - theta_r, ], k = 1, 2, ..., hp
             for i in range(hp):
@@ -153,10 +152,10 @@ class LMPC(ControlAPI):
         t = 0.0
         assert len(u_list) == hp, "Error: length of u_list should be hp!"
         mpc_horizon.t.append(t)
-        mpc_horizon.x.append(x[0,0] + target[0])
-        mpc_horizon.dx.append(x[1,0])
-        mpc_horizon.theta.append(x[2,0] + target[1])
-        mpc_horizon.dtheta.append(x[3,0])
+        mpc_horizon.x.append(x0[0,0] + target[0])
+        mpc_horizon.dx.append(x0[1,0])
+        mpc_horizon.theta.append(x0[2,0] + target[1])
+        mpc_horizon.dtheta.append(x0[3,0])
         mpc_horizon.force.append(u_list[0])
         for i in range(hp):
             t += dt
@@ -257,15 +256,23 @@ class LMPC(ControlAPI):
         LMPC solver
     """
     def _lmpc_solver(self, A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, use_qp, \
-                    h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub):
+                    H_tilde, H_tilde_lb, H_tilde_ub):
+        n = x0.shape[0] # state dimension
         if not use_qp:
             # Analytical solver
-            u_list_hc = self._lmpc_solver_unconstrained(A_tilde, B_tilde, Q_tilde, R_tilde, x0)
+            U = self._lmpc_solver_unconstrained(A_tilde, B_tilde, Q_tilde, R_tilde, x0)
         else:
-            # use QP solver, return u_list_hc of length hc
-            u_list_hc = self._lmpc_solver_constrained(A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, \
-                                                    h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub)
+            # use QP solver, return U of length hc
+            U = self._lmpc_solver_constrained(A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, \
+                                                    H_tilde, H_tilde_lb, H_tilde_ub)
+        X = A_tilde @ x0 + B_tilde @ U  # size (n*hp,1)
+
+        u_list = [] 
         x_list = []
+        for i in range(hp):
+            u_list.append(U[i] if i < hc else U[-1])
+            x_list.append(X[i*n:(i+1)*n])
+
         return u_list, x_list
     
     """
@@ -274,22 +281,52 @@ class LMPC(ControlAPI):
     def _lmpc_solver_unconstrained(self, A_tilde, B_tilde, Q_tilde, R_tilde, x0):
         p = B_tilde.T @ Q_tilde @ B_tilde + R_tilde
         q = B_tilde.T @ Q_tilde @ A_tilde @ x0
-        u_list_hc = np.linalg.solve(p, -q)  # length hc
-        return u_list_hc
+        U = np.linalg.solve(p, -q)  # length hc
+        return U
     
     """
         LMC solver (constrained, QP solution)
     """
     def _lmpc_solver_constrained(self, A_tilde, B_tilde, Q_tilde, R_tilde, x0, hp, hc, \
-                                h_ineq, h_lb, h_ub, u_lb, u_ub, du_lb, du_ub):
-
-
+                                H_tilde, H_tilde_lb, H_tilde_ub):
         P = B_tilde.T @ Q_tilde @ B_tilde + R_tilde
         q = B_tilde.T @ Q_tilde @ A_tilde @ x0
         
         # OSQP problem formulation: https://osqp.org/docs/index.html
         prob = osqp.OSQP()
-        prob.setup(P, q, G_ineq, g_lb, g_ub, warm_start=True, verbose=False)
-        res = prob.solve()
+        prob.setup(P, q, H_tilde, H_tilde_lb, H_tilde_ub, warm_start=True, verbose=False)
+        U = prob.solve()
 
-        return res
+        return U
+    
+    def _calculate_costs(self, x_list, u_list, du_list=None):
+        lqr_cfg = self.control_param_["lqr_cfg"]
+        Qx = lqr_cfg["Qx"]
+        Qtheta = lqr_cfg["Qtheta"]
+        R_u = lqr_cfg["R_u"]
+        R_du = lqr_cfg["R_du"]
+
+        cost_x = 0.0
+        cost_theta = 0.0
+        cost_u = 0.0
+        cost_du = 0.0
+        for i in range(len(x_list)):
+            x = x_list[i]
+            u = u_list[i]
+            x0 = x[0][0]
+            x2 = x[2][0]
+            cost_x += x0 * Qx * x0
+            cost_theta += x2 * Qtheta * x2
+            cost_u += u * R_u * u
+            if du_list is not None:
+                du = du_list[i].item()
+                cost_du += du * R_du * du
+        cost_total = cost_x + cost_theta + cost_u + cost_du
+
+        self.frame_msg_.ClearField("costs")
+        costs = self.frame_msg_.costs
+        costs.cost_total = cost_total
+        costs.cost_x = cost_x
+        costs.cost_theta = cost_theta
+        costs.cost_u = cost_u
+        costs.cost_du = cost_du
