@@ -27,6 +27,7 @@ class NmpcProblem {
  protected:
   json super_param_;
   json control_param_;
+  std::vector<double> initial_guess_;
 };
 
 }  // namespace CartPole

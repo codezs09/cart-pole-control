@@ -35,8 +35,6 @@ class NmpcProblemRegular : public NmpcProblem {
 
   void _UpdateResults(const CppAD::ipopt::solve_result<Dvector>& solution,
                       FG_eval_regular& fg_eval, cart_pole::Frame* frame);
-
-  std::vector<double> initial_guess_;
 };
 
 }  // namespace CartPole

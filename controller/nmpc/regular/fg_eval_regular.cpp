@@ -2,14 +2,6 @@
 
 namespace CartPole {
 
-void FG_eval_regular::LoadState(const std::vector<double>& state,
-                                const std::vector<double>& target,
-                                double last_control) {
-  state_ = state;
-  target_ = target;
-  last_control_ = last_control;
-}
-
 void FG_eval_regular::operator()(ADvector& fg, const ADvector& vars) {
   ADvector us, xs, dxs, thetas, dthetas;
   _UpdateADStateSequence(vars, &us, &xs, &dxs, &thetas, &dthetas);

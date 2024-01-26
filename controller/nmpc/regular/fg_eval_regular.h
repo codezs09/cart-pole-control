@@ -2,31 +2,23 @@
 
 #include <cppad/ipopt/solve.hpp>
 
+#include "controller/nmpc/fg_eval.h"
 #include "utils/utils.hpp"
 
 namespace CartPole {
-
-typedef CPPAD_TESTVECTOR(double) Dvector;
 
 /**
  * @brief FG_eval_regular class definition implementation.
  *
  */
-class FG_eval_regular {
+class FG_eval_regular : public FG_eval {
  public:
-  typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector;
   FG_eval_regular() = delete;
   FG_eval_regular(json super_param, json control_param)
-      : super_param_(super_param), control_param_(control_param) {
-    hp_ = control_param_["nmpc_cfg"]["hp"];
-    hc_ = control_param_["nmpc_cfg"]["hc"];
-  }
-
-  void LoadState(const std::vector<double>& state,
-                 const std::vector<double>& target, double last_control);
+      : FG_eval(super_param, control_param) {}
 
   // MPC implementation
-  void operator()(ADvector& fg, const ADvector& vars);
+  void operator()(ADvector& fg, const ADvector& vars) override;
 
   void GetStateSequenceValues(const std::vector<double>& vars_val,
                               std::vector<double>* ts_val,
@@ -34,13 +26,13 @@ class FG_eval_regular {
                               std::vector<double>* xs_val,
                               std::vector<double>* dxs_val,
                               std::vector<double>* thetas_val,
-                              std::vector<double>* dthetas_val);
+                              std::vector<double>* dthetas_val) override;
 
   void GetCostsValues(const std::vector<double>& vars_val, double* cost_x_val,
                       double* cost_theta_val, double* cost_u_val,
-                      double* cost_du_val);
+                      double* cost_du_val) override;
 
- private:
+ protected:
   void _UpdateADStateSequence(const ADvector& vars, ADvector* us, ADvector* xs,
                               ADvector* dxs, ADvector* thetas,
                               ADvector* dthetas);
@@ -49,16 +41,6 @@ class FG_eval_regular {
                       const ADvector& xs, const ADvector& thetas,
                       CppAD::AD<double>* cost_x, CppAD::AD<double>* cost_theta,
                       CppAD::AD<double>* cost_u, CppAD::AD<double>* cost_du);
-
-  json super_param_;
-  json control_param_;
-
-  size_t hp_;
-  size_t hc_;
-
-  std::vector<double> state_;
-  std::vector<double> target_;
-  double last_control_;
 };
 
 }  // namespace CartPole
