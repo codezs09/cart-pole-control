@@ -10,6 +10,7 @@ from vis.vis_data import vis_data, plot_data_frames
 from system.plant import Plant
 from controller.nmpc import NMPC
 from controller.lqr import LQR
+from controller.lmpc import LMPC
 from proto.proto_gen.data_pb2 import Data, Frame
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -39,7 +40,7 @@ def get_controller():
     if type == "NMPC":
         return NMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     elif type == "LMPC":
-        return None # TODO
+        return LMPC(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     elif type == "LQR":
         return LQR(SUPER_PARAM_PATH, CONTROL_PARAM_PATH)
     else:

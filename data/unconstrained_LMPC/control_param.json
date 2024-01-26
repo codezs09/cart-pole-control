@@ -25,7 +25,7 @@
         "Qtheta": 100.0,
         "R_u": 1.0,
         "R_du": 0.1,
-        "is_unconstrained": false
+        "is_unconstrained": true
     },
     "lqr_cfg": {
         "Qx": 5000.0,

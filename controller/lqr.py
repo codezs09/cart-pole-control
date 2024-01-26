@@ -8,45 +8,11 @@ from scipy.linalg import expm
 from proto.proto_gen.data_pb2 import Frame
 from controller.control_api import ControlAPI
 from utils.utils import load_json
+from utils.c2d import lsys_c2d
 
 pip3_control_path = "/home/deeproute/.local/lib/python3.8/site-packages"
 sys.path.insert(0, pip3_control_path)
 import control  # control system library
-
-"""
-    lsys_c2d: Continuous to discrete conversion
-"""
-def lsys_c2d(Ac, Bc, dt):
-    n = Ac.shape[0]
-    Ad = expm(Ac * dt)
-    if np.linalg.det(Ac) != 0:
-        Bd = np.matmul(np.matmul(np.linalg.inv(Ac), (Ad - np.eye(4))), Bc)
-    else:
-        M = np.zeros((n, n))
-        Ac_pow = np.eye(n)
-        factorial = 1.0
-        dt_pow = dt
-        for i in range(1, 5):
-            M += Ac_pow / factorial * dt_pow
-            Ac_pow = Ac_pow * Ac
-            factorial *= (i + 1)
-            dt_pow *= dt
-        Bd = M @ Bc
-
-    # debug
-    if False:
-        C = np.eye(n)
-        D = np.zeros((n, 1))
-        sys_c = control.ss(Ac, Bc, C, D)
-        sys_d = control.c2d(sys_c, dt, method='zoh')
-        Ad_check, Bd_check, _, _ = control.ssdata(sys_d)
-        print("-----------------------------------------------------------")
-        print("Ad: ", Ad)
-        print("Ad_check: ", Ad_check)
-        print("Bd: ", Bd)
-        print("Bd_check: ", Bd_check)
-
-    return Ad, Bd
 
 """
     LQR class
@@ -64,20 +30,9 @@ class LQR(ControlAPI):
             print("Infinite LQR used !")
 
     def control(self, state, target, last_control):
-        u_lqr = self._lqr_solve(state, target, last_control)
-        
         dt = self.super_param_["ctrl_time_step"]
-        # update costs
-        x_diff = state[0] - target[0]
-        theta_diff = state[2] - target[1]
-        du_lqr = (u_lqr - last_control) / dt
-        lqr_cfg = self.control_param_["lqr_cfg"]
-        cost_x = x_diff * lqr_cfg["Qx"] * x_diff
-        cost_theta = theta_diff * lqr_cfg["Qtheta"] * theta_diff
-        cost_u = u_lqr * lqr_cfg["R_u"] * u_lqr
-        cost_du = du_lqr * lqr_cfg["R_du"] * du_lqr
-        cost_total = cost_x + cost_theta + cost_u + cost_du
-
+        u_lqr = self._lqr_control(state, target, last_control)
+        
         u = u_lqr
         # rate limit
         u_step_limit = dt * self.control_param_["force_rate_limit"]
@@ -102,7 +57,7 @@ class LQR(ControlAPI):
     def get_frame_msg(self):
         return self.frame_msg_
     
-    def _lqr_solve(self, state, target, last_control):
+    def _lqr_control(self, state, target, last_control):
         model_param = self.control_param_['model_param']
         M = model_param['mass_cart']
         m = model_param['mass_pole']
