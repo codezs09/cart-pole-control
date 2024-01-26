@@ -1,6 +1,6 @@
 # Control of the Cart-Pole System
 
-Implementation of control algorithms for the cart-pole system, including Nonlinear Model Predictive Control (NMPC), Linear Quadratic Control (LQR). 
+Implementation of control algorithms for the cart-pole system, including Nonlinear Model Predictive Control (NMPC), Linear Quadratic Control (LQR), and Linear Model Predictive Control (LMPC). 
 
 (add the gif for the cart-pole system)
 
@@ -53,12 +53,12 @@ python3 run.py --save_gif
 Settings of the controller type and parameter values are in the json file, `config/control_param.json`.  
 
 ```
-"type": "NMPC",     // Available Types: "LQR", "NMPC"
+"type": "NMPC",     // Available Types: "LQR", "LMPC", "NMPC"
 
 "nmpc_cfg": {       // Control parameters for NMPC, active when "type" is "NMPC"
     "mpc_dt": 0.02,     // [s], NMPC time step
     "hp": 50,           // Prediction Horizon
-    "hc": 50,           // Control Horizon
+    "hc": 50,           // Control Horizon, hc <= hp
     "Qx": 5000.0,       // Weight for tracking error of x
     "Qtheta": 100.0,    // Weight for tracking error of theta
     "R_u": 100.0,       // Weight for control effort (force)
@@ -74,6 +74,18 @@ Settings of the controller type and parameter values are in the json file, `conf
     "hp": 50,           // Horizon, valid only if `is_finite` is true
     "lqr_dt": 0.02      // DARE step size, valid only if `is_finite` is true; Generally, `lqr_dt` = `ctrl_time_step`
     "use_dare": true    // For Infinite-Horizon LQR: If true, use DARE solver; Otherwise, use CARE solver
+}
+
+ "lmpc_cfg": {
+    "mpc_dt": 0.02,
+    "hp": 50,
+    "hc": 50,
+    "Qx": 5000.0,
+    "Qtheta": 100.0,
+    "R_u": 1.0,
+    "R_du": 0.1,
+    "is_unconstrained": false   // If true, use Analytical solution for unconstrained LMPC; 
+                                // Otherwise, use QP solver for constrained LMPC
 }
 
 ```
