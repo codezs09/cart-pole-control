@@ -3,7 +3,6 @@
 #include <cppad/ipopt/solve.hpp>
 #include <string>
 
-#include "fg_eval.h"
 #include "proto/proto_gen/data.pb.h"
 #include "utils/utils.hpp"
 

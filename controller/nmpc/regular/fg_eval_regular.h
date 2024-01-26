@@ -9,14 +9,14 @@ namespace CartPole {
 typedef CPPAD_TESTVECTOR(double) Dvector;
 
 /**
- * @brief FG_eval class definition implementation.
+ * @brief FG_eval_regular class definition implementation.
  *
  */
-class FG_eval {
+class FG_eval_regular {
  public:
   typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector;
-  FG_eval() = delete;
-  FG_eval(json super_param, json control_param)
+  FG_eval_regular() = delete;
+  FG_eval_regular(json super_param, json control_param)
       : super_param_(super_param), control_param_(control_param) {
     hp_ = control_param_["nmpc_cfg"]["hp"];
     hc_ = control_param_["nmpc_cfg"]["hc"];

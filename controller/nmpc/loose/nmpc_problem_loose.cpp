@@ -1,9 +1,9 @@
-#include "nmpc_problem_regular.h"
+#include "nmpc_problem_loose.h"
 
 namespace CartPole {
 
-bool NmpcProblemRegular::Init(const std::string& super_param_path,
-                              const std::string& control_param_path) {
+bool NmpcProblemLoose::Init(const std::string& super_param_path,
+                            const std::string& control_param_path) {
   utils::load_json(super_param_path, &super_param_);
   utils::load_json(control_param_path, &control_param_);
 }
@@ -20,9 +20,9 @@ bool NmpcProblemRegular::Init(const std::string& super_param_path,
  *       u_lb <= u[k] <= u_ub, k=0,...,hc-1
  *       theta_lb <= theta[k] <= theta_ub, k=0,...,hp-1
  */
-void NmpcProblemRegular::Solve(const std::vector<double>& state,
-                               const std::vector<double>& target,
-                               double last_control, cart_pole::Frame* frame) {
+void NmpcProblemLoose::Solve(const std::vector<double>& state,
+                             const std::vector<double>& target,
+                             double last_control, cart_pole::Frame* frame) {
   bool ok = true;
   const size_t hc = control_param_["nmpc_cfg"]["hc"];
   const size_t hp = control_param_["nmpc_cfg"]["hp"];
@@ -45,7 +45,7 @@ void NmpcProblemRegular::Solve(const std::vector<double>& state,
   FG_eval fg_eval(super_param_, control_param_);
   fg_eval.LoadState(state, target, last_control);
 
-  std::string options = NmpcProblemRegular::_SetSolverOptions();
+  std::string options = NmpcProblemLoose::_SetSolverOptions();
 
   CppAD::ipopt::solve_result<Dvector> solution;
   CppAD::ipopt::solve<Dvector, FG_eval>(
@@ -66,7 +66,7 @@ void NmpcProblemRegular::Solve(const std::vector<double>& state,
   }
 }
 
-void NmpcProblemRegular::_UpdateResults(
+void NmpcProblemLoose::_UpdateResults(
     const CppAD::ipopt::solve_result<Dvector>& solution, FG_eval& fg_eval,
     cart_pole::Frame* frame) {
   // OPTIONAL: output solution.x for next initial guess
@@ -103,7 +103,7 @@ void NmpcProblemRegular::_UpdateResults(
   costs->set_cost_du(cost_du_val);
 }
 
-std::string NmpcProblemRegular::_SetSolverOptions() {
+std::string NmpcProblemLoose::_SetSolverOptions() {
   // options for IPOPT solver
   std::string options;
   // Uncomment this if you'd like more print information
@@ -122,14 +122,14 @@ std::string NmpcProblemRegular::_SetSolverOptions() {
   return options;
 }
 
-void NmpcProblemRegular::_SetInitialGuess(Dvector* vars) {
+void NmpcProblemLoose::_SetInitialGuess(Dvector* vars) {
   for (size_t i = 0; i < vars->size(); ++i) {
     (*vars)[i] = 0.0;
   }
 }
 
-void NmpcProblemRegular::_SetVariableBounds(Dvector* vars_lowerbound,
-                                            Dvector* vars_upperbound) {
+void NmpcProblemLoose::_SetVariableBounds(Dvector* vars_lowerbound,
+                                          Dvector* vars_upperbound) {
   const double force_rate_limit =
       std::fabs(static_cast<double>(control_param_["force_rate_limit"]));
   const double delta_u_limit =
@@ -142,8 +142,8 @@ void NmpcProblemRegular::_SetVariableBounds(Dvector* vars_lowerbound,
   }
 }
 
-void NmpcProblemRegular::_SetConstraintsBounds(
-    Dvector* constraints_lowerbound, Dvector* constraints_upperbound) {
+void NmpcProblemLoose::_SetConstraintsBounds(Dvector* constraints_lowerbound,
+                                             Dvector* constraints_upperbound) {
   const size_t hp = control_param_["nmpc_cfg"]["hp"];
   const size_t hc = control_param_["nmpc_cfg"]["hc"];
   const double force_limit = control_param_["force_limit"];

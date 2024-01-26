@@ -1,6 +1,7 @@
 #pragma once
 
-#include "nmpc_problem_interface.h"
+#include "controller/nmpc/nmpc_problem_interface.h"
+#include "controller/nmpc/regular/fg_eval_regular.h"
 
 namespace CartPole {
 
@@ -31,7 +32,7 @@ class NmpcProblemRegular : public NmpcProblem {
                              Dvector* constraints_upperbound);
 
   void _UpdateResults(const CppAD::ipopt::solve_result<Dvector>& solution,
-                      FG_eval& fg_eval, cart_pole::Frame* frame);
+                      FG_eval_regular& fg_eval, cart_pole::Frame* frame);
 };
 
 }  // namespace CartPole

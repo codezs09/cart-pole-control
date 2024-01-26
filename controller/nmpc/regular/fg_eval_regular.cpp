@@ -1,16 +1,16 @@
-#include "fg_eval.h"
+#include "fg_eval_regular.h"
 
 namespace CartPole {
 
-void FG_eval::LoadState(const std::vector<double>& state,
-                        const std::vector<double>& target,
-                        double last_control) {
+void FG_eval_regular::LoadState(const std::vector<double>& state,
+                                const std::vector<double>& target,
+                                double last_control) {
   state_ = state;
   target_ = target;
   last_control_ = last_control;
 }
 
-void FG_eval::operator()(ADvector& fg, const ADvector& vars) {
+void FG_eval_regular::operator()(ADvector& fg, const ADvector& vars) {
   ADvector us, xs, dxs, thetas, dthetas;
   _UpdateADStateSequence(vars, &us, &xs, &dxs, &thetas, &dthetas);
 
@@ -33,13 +33,11 @@ void FG_eval::operator()(ADvector& fg, const ADvector& vars) {
  * @brief
  * sequence [0, 1, 2, ..., hp], length = hp + 1
  */
-void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
-                                     std::vector<double>* ts_val,
-                                     std::vector<double>* us_val,
-                                     std::vector<double>* xs_val,
-                                     std::vector<double>* dxs_val,
-                                     std::vector<double>* thetas_val,
-                                     std::vector<double>* dthetas_val) {
+void FG_eval_regular::GetStateSequenceValues(
+    const std::vector<double>& vars_val, std::vector<double>* ts_val,
+    std::vector<double>* us_val, std::vector<double>* xs_val,
+    std::vector<double>* dxs_val, std::vector<double>* thetas_val,
+    std::vector<double>* dthetas_val) {
   assert(vars_val.size() == hc_);
   ADvector vars(hc_);
   CppAD::Independent(vars);
@@ -87,9 +85,9 @@ void FG_eval::GetStateSequenceValues(const std::vector<double>& vars_val,
             dthetas_val->begin() + 1);
 }
 
-void FG_eval::GetCostsValues(const std::vector<double>& vars_val,
-                             double* cost_x_val, double* cost_theta_val,
-                             double* cost_u_val, double* cost_du_val) {
+void FG_eval_regular::GetCostsValues(const std::vector<double>& vars_val,
+                                     double* cost_x_val, double* cost_theta_val,
+                                     double* cost_u_val, double* cost_du_val) {
   assert(vars_val.size() == hc_);
   ADvector vars(hc_);
   CppAD::Independent(vars);
@@ -115,9 +113,10 @@ void FG_eval::GetCostsValues(const std::vector<double>& vars_val,
   *cost_du_val = outputs_val[3];
 }
 
-void FG_eval::_UpdateADStateSequence(const ADvector& vars, ADvector* us,
-                                     ADvector* xs, ADvector* dxs,
-                                     ADvector* thetas, ADvector* dthetas) {
+void FG_eval_regular::_UpdateADStateSequence(const ADvector& vars, ADvector* us,
+                                             ADvector* xs, ADvector* dxs,
+                                             ADvector* thetas,
+                                             ADvector* dthetas) {
   us->resize(hc_);
   xs->resize(hp_);
   dxs->resize(hp_);
@@ -191,12 +190,12 @@ void FG_eval::_UpdateADStateSequence(const ADvector& vars, ADvector* us,
   }
 }
 
-void FG_eval::_UpdateADCosts(const ADvector& vars, const ADvector& us,
-                             const ADvector& xs, const ADvector& thetas,
-                             CppAD::AD<double>* cost_x,
-                             CppAD::AD<double>* cost_theta,
-                             CppAD::AD<double>* cost_u,
-                             CppAD::AD<double>* cost_du) {
+void FG_eval_regular::_UpdateADCosts(const ADvector& vars, const ADvector& us,
+                                     const ADvector& xs, const ADvector& thetas,
+                                     CppAD::AD<double>* cost_x,
+                                     CppAD::AD<double>* cost_theta,
+                                     CppAD::AD<double>* cost_u,
+                                     CppAD::AD<double>* cost_du) {
   const double q_x = control_param_["nmpc_cfg"]["Qx"];
   const double q_th = control_param_["nmpc_cfg"]["Qtheta"];
   const double r_u = control_param_["nmpc_cfg"]["R_u"];
