@@ -7,6 +7,10 @@ bool NmpcProblemRegular::Init(const std::string& super_param_path,
                               const std::string& control_param_path) {
   utils::load_json(super_param_path, &super_param_);
   utils::load_json(control_param_path, &control_param_);
+
+  const size_t hc = control_param_["nmpc_cfg"]["hc"];
+  initial_guess_.clear();
+  initial_guess_.resize(hc, 0.0);
 }
 
 /**
@@ -73,7 +77,8 @@ void NmpcProblemRegular::_UpdateResults(
   // OPTIONAL: output solution.x for next initial guess
 
   // fill state and control optimal sequence
-  std::vector<double> vars_val(solution.x.begin(), solution.x.end());
+  initial_guess_.assign(solution.x.begin(), solution.x.end());
+  const auto& vars_val = initial_guess_;
 
   std::vector<double> ts_val, us_val, xs_val, dxs_val, thetas_val, dthetas_val;
   fg_eval.GetStateSequenceValues(vars_val, &ts_val, &us_val, &xs_val, &dxs_val,
@@ -125,7 +130,7 @@ std::string NmpcProblemRegular::_SetSolverOptions() {
 
 void NmpcProblemRegular::_SetInitialGuess(Dvector* vars) {
   for (size_t i = 0; i < vars->size(); ++i) {
-    (*vars)[i] = 0.0;
+    (*vars)[i] = initial_guess_[i];
   }
 }
 
