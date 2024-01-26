@@ -7,14 +7,16 @@ namespace CartPole {
 
 Nmpc::Nmpc(const std::string& super_param_path,
            const std::string& control_param_path) {
-  nmpc_problem_.Init(super_param_path, control_param_path);
+  nmpc_problem_ptr_ =
+      NmpcProblemFactory::Create(super_param_path, control_param_path);
+  assert(nmpc_problem_ptr_ != nullptr);
 }
 
 Nmpc::~Nmpc() { utils::clean_c_str(c_str_); }
 
 bool Nmpc::RunSolver(const std::vector<double>& state,
                      const std::vector<double>& target, double last_control) {
-  nmpc_problem_.Solve(state, target, last_control, &frame_);
+  nmpc_problem_ptr_->Solve(state, target, last_control, &frame_);
   _SerializedFrameMsgToCString();
 }
 

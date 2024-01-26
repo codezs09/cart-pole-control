@@ -2,7 +2,7 @@ project(cart_pole_nmpc)
 
 add_library(nmpc SHARED
             nmpc.cpp
-            nmpc_problem.cpp
+            nmpc_problem_regular.cpp
             fg_eval.cpp)
 target_link_libraries(nmpc PUBLIC
                     ${IPOPT_LIBRARIES}

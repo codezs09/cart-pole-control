@@ -13,10 +13,11 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "nmpc_problem.h"
+#include "nmpc_problem_factory.h"
 #include "proto/proto_gen/data.pb.h"
 #include "utils/utils.hpp"
 
@@ -38,7 +39,7 @@ class Nmpc {
  private:
   void _SerializedFrameMsgToCString();
 
-  NmpcProblem nmpc_problem_;
+  std::unique_ptr<NmpcProblem> nmpc_problem_ptr_ = nullptr;
   cart_pole::Frame frame_;
   char* c_str_ = nullptr;
   int c_str_size_ = 0;

@@ -1,29 +1,26 @@
 #pragma once
 
-#include <cppad/ipopt/solve.hpp>
-#include <string>
-
-#include "fg_eval.h"
-#include "proto/proto_gen/data.pb.h"
-#include "utils/utils.hpp"
+#include "nmpc_problem_interface.h"
 
 namespace CartPole {
 
 /**
- * @brief NmpcProblem class defines the CartPole NMPC problem.
- *
+ * @brief NmpcProblemRegular class defines the CartPole NMPC problem.
+ * Regular:
+ *     Optimize the control sequences over the horizon. Hard constrained on
+ *     states and control.
  */
-class NmpcProblem {
+class NmpcProblemRegular : public NmpcProblem {
  public:
-  NmpcProblem() = default;
-  ~NmpcProblem() = default;
+  NmpcProblemRegular() = default;
+  ~NmpcProblemRegular() = default;
 
   bool Init(const std::string& super_param_path,
-            const std::string& control_param_path);
+            const std::string& control_param_path) override;
 
   void Solve(const std::vector<double>& state,
              const std::vector<double>& target, double last_control,
-             cart_pole::Frame* frame);
+             cart_pole::Frame* frame) override;
 
  private:
   std::string _SetSolverOptions();
@@ -35,9 +32,6 @@ class NmpcProblem {
 
   void _UpdateResults(const CppAD::ipopt::solve_result<Dvector>& solution,
                       FG_eval& fg_eval, cart_pole::Frame* frame);
-
-  json super_param_;
-  json control_param_;
 };
 
 }  // namespace CartPole

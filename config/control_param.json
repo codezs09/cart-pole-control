@@ -1,5 +1,5 @@
 {
-    "type": "LMPC",
+    "type": "NMPC",
     "model_param": {
         "mass_cart": 0.5,
         "mass_pole": 0.2,
@@ -15,7 +15,8 @@
         "Qx": 5000.0,
         "Qtheta": 100.0,
         "R_u": 1.0,
-        "R_du": 0.1
+        "R_du": 0.1,
+        "nmpc_type": "regular"
     },
     "lmpc_cfg": {
         "mpc_dt": 0.02,
