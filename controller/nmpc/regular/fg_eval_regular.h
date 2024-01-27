@@ -18,29 +18,29 @@ class FG_eval_regular : public FG_eval {
       : FG_eval(super_param, control_param) {}
 
   // MPC implementation
-  void operator()(ADvector& fg, const ADvector& vars) override;
+  virtual void operator()(ADvector& fg, const ADvector& vars) override;
 
-  void GetStateSequenceValues(const std::vector<double>& vars_val,
-                              std::vector<double>* ts_val,
-                              std::vector<double>* us_val,
-                              std::vector<double>* xs_val,
-                              std::vector<double>* dxs_val,
-                              std::vector<double>* thetas_val,
-                              std::vector<double>* dthetas_val) override;
+  virtual void GetStateSequenceValues(
+      const std::vector<double>& vars_val, std::vector<double>* ts_val,
+      std::vector<double>* us_val, std::vector<double>* xs_val,
+      std::vector<double>* dxs_val, std::vector<double>* thetas_val,
+      std::vector<double>* dthetas_val) override;
 
-  void GetCostsValues(const std::vector<double>& vars_val, double* cost_x_val,
-                      double* cost_theta_val, double* cost_u_val,
-                      double* cost_du_val) override;
+  virtual void GetCostsValues(const std::vector<double>& vars_val,
+                              double* cost_x_val, double* cost_theta_val,
+                              double* cost_u_val, double* cost_du_val) override;
 
  protected:
-  void _UpdateADStateSequence(const ADvector& vars, ADvector* us, ADvector* xs,
-                              ADvector* dxs, ADvector* thetas,
-                              ADvector* dthetas);
+  virtual void _UpdateADStateSequence(const ADvector& vars, ADvector* us,
+                                      ADvector* xs, ADvector* dxs,
+                                      ADvector* thetas, ADvector* dthetas);
 
-  void _UpdateADCosts(const ADvector& vars, const ADvector& us,
-                      const ADvector& xs, const ADvector& thetas,
-                      CppAD::AD<double>* cost_x, CppAD::AD<double>* cost_theta,
-                      CppAD::AD<double>* cost_u, CppAD::AD<double>* cost_du);
+  virtual void _UpdateADCosts(const ADvector& vars, const ADvector& us,
+                              const ADvector& xs, const ADvector& thetas,
+                              CppAD::AD<double>* cost_x,
+                              CppAD::AD<double>* cost_theta,
+                              CppAD::AD<double>* cost_u,
+                              CppAD::AD<double>* cost_du);
 };
 
 }  // namespace CartPole

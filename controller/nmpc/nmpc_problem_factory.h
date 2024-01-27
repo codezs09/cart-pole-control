@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include "controller/nmpc/loose/nmpc_problem_loose.h"
 #include "controller/nmpc/regular/nmpc_problem_regular.h"
 #include "nmpc_problem_interface.h"
 
@@ -25,7 +26,7 @@ class NmpcProblemFactory {
     if (nmpc_type == "regular") {
       nmpc_problem_ptr = std::make_unique<NmpcProblemRegular>();
     } else if (nmpc_type == "loose") {
-      // nmpc_problem_ptr = std::make_unique<NmpcProblemLoose>();
+      nmpc_problem_ptr = std::make_unique<NmpcProblemLoose>();
     } else {
       std::string s = "Unsupported NMPC type: " + nmpc_type +
                       "\nPlease set \"nmpc_type\" to one of {\"regular\", "

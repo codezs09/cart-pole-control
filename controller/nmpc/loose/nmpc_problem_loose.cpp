@@ -1,4 +1,5 @@
 #include "nmpc_problem_loose.h"
+#include "fg_eval_loose.h"
 
 namespace CartPole {
 
@@ -6,6 +7,10 @@ bool NmpcProblemLoose::Init(const std::string& super_param_path,
                             const std::string& control_param_path) {
   utils::load_json(super_param_path, &super_param_);
   utils::load_json(control_param_path, &control_param_);
+
+  const size_t hc = control_param_["nmpc_cfg"]["hc"];
+  initial_guess_.clear();
+  initial_guess_.resize(hc, 0.0);
 }
 
 /**
@@ -35,22 +40,17 @@ void NmpcProblemLoose::Solve(const std::vector<double>& state,
   Dvector vars_upperbound(n_vars);
   _SetVariableBounds(&vars_lowerbound, &vars_upperbound);
 
-  size_t n_constraints = hc + hp;
-  Dvector constraints_lowerbound(n_constraints);
-  Dvector constraints_upperbound(n_constraints);
-  _SetConstraintsBounds(&constraints_lowerbound, &constraints_upperbound);
-
   // s.t. x[k+1] = f(x[k], du[k], args), k=0,...,hp-1
 
-  FG_eval fg_eval(super_param_, control_param_);
+  FG_eval_loose fg_eval(super_param_, control_param_);
   fg_eval.LoadState(state, target, last_control);
 
   std::string options = NmpcProblemLoose::_SetSolverOptions();
 
   CppAD::ipopt::solve_result<Dvector> solution;
-  CppAD::ipopt::solve<Dvector, FG_eval>(
-      options, vars, vars_lowerbound, vars_upperbound, constraints_lowerbound,
-      constraints_upperbound, fg_eval, solution);
+  CppAD::ipopt::solve<Dvector, FG_eval_loose>(options, vars, vars_lowerbound,
+                                              vars_upperbound, Dvector(),
+                                              Dvector(), fg_eval, solution);
   ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
 
   frame->set_x(state[0]);
@@ -67,12 +67,13 @@ void NmpcProblemLoose::Solve(const std::vector<double>& state,
 }
 
 void NmpcProblemLoose::_UpdateResults(
-    const CppAD::ipopt::solve_result<Dvector>& solution, FG_eval& fg_eval,
+    const CppAD::ipopt::solve_result<Dvector>& solution, FG_eval_loose& fg_eval,
     cart_pole::Frame* frame) {
   // OPTIONAL: output solution.x for next initial guess
 
   // fill state and control optimal sequence
-  std::vector<double> vars_val(solution.x.begin(), solution.x.end());
+  initial_guess_.assign(solution.x.begin(), solution.x.end());
+  const auto& vars_val = initial_guess_;
 
   std::vector<double> ts_val, us_val, xs_val, dxs_val, thetas_val, dthetas_val;
   fg_eval.GetStateSequenceValues(vars_val, &ts_val, &us_val, &xs_val, &dxs_val,
@@ -124,41 +125,15 @@ std::string NmpcProblemLoose::_SetSolverOptions() {
 
 void NmpcProblemLoose::_SetInitialGuess(Dvector* vars) {
   for (size_t i = 0; i < vars->size(); ++i) {
-    (*vars)[i] = 0.0;
+    (*vars)[i] = initial_guess_[i];
   }
 }
 
 void NmpcProblemLoose::_SetVariableBounds(Dvector* vars_lowerbound,
                                           Dvector* vars_upperbound) {
-  const double force_rate_limit =
-      std::fabs(static_cast<double>(control_param_["force_rate_limit"]));
-  const double delta_u_limit =
-      force_rate_limit *
-      static_cast<double>(control_param_["nmpc_cfg"]["mpc_dt"]);
-
   for (size_t i = 0; i < vars_lowerbound->size(); ++i) {
-    (*vars_lowerbound)[i] = -delta_u_limit;
-    (*vars_upperbound)[i] = delta_u_limit;
-  }
-}
-
-void NmpcProblemLoose::_SetConstraintsBounds(Dvector* constraints_lowerbound,
-                                             Dvector* constraints_upperbound) {
-  const size_t hp = control_param_["nmpc_cfg"]["hp"];
-  const size_t hc = control_param_["nmpc_cfg"]["hc"];
-  const double force_limit = control_param_["force_limit"];
-  const double theta_limit = control_param_["theta_limit"];
-
-  // force constraints, size hc
-  for (size_t i = 0; i < hc; i++) {
-    (*constraints_lowerbound)[i] = -force_limit;
-    (*constraints_upperbound)[i] = force_limit;
-  }
-
-  // theta constraints, size hp
-  for (size_t i = hc; i < hc + hp; i++) {
-    (*constraints_lowerbound)[i] = -theta_limit;
-    (*constraints_upperbound)[i] = theta_limit;
+    (*vars_lowerbound)[i] = -1e19;  // -inf
+    (*vars_upperbound)[i] = 1e19;   // +inf
   }
 }
 

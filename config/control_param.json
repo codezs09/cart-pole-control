@@ -16,7 +16,7 @@
         "Qtheta": 100.0,
         "R_u": 1.0,
         "R_du": 0.1,
-        "nmpc_type": "regular"
+        "nmpc_type": "loose"
     },
     "lmpc_cfg": {
         "mpc_dt": 0.02,
