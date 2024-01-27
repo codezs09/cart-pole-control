@@ -14,6 +14,7 @@ Follow the instructions (link) to install Ipopt.
 1. Request and download `Coin-HSL Archive` (free for personal use). 
 2. Folllow install instruction on `ThirdParty-HSL` to install the solver library. 
 3. Follow install instruction on `Ipopt`.
+4. Follow install instruction on `CppAD`.
 
 Install dependencies for python3
 ```
@@ -62,7 +63,8 @@ Settings of the controller type and parameter values are in the json file, `conf
     "Qx": 5000.0,       // Weight for tracking error of x
     "Qtheta": 100.0,    // Weight for tracking error of theta
     "R_u": 100.0,       // Weight for control effort (force)
-    "R_du": 0.0         // Weight for control rate (force rate)
+    "R_du": 0.0,        // Weight for control rate (force rate)
+    "nmpc_type": "loose"    // "regular" or "loose", "loose" for loose of hard constraints
 }
 
 "lqr_cfg": {        // Control parameters for LQR, active when "type" is "LQR"

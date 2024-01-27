@@ -119,6 +119,7 @@ std::string NmpcProblemLoose::_SetSolverOptions() {
   // NOTE: Currently the solver has a maximum time limit of 0.5 seconds.
   // Change this as you see fit.
   options += "Numeric max_cpu_time          0.5\n";
+  options += "String  linear_solver         mumps\n";  // ma57 ma27 mumps
 
   return options;
 }
