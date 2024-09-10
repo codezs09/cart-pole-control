@@ -13,7 +13,9 @@ Implementation of control algorithms for the cart-pole system, including Nonline
 Follow the instructions (link) to install Ipopt.
 1. Request and download `Coin-HSL Archive` (free for personal use). 
 2. Folllow install instruction on `ThirdParty-HSL` to install the solver library. 
+For step 1 and 2, you can also use MUMPS solver alternatively by following instructions on `ThirdParty-MUMPS`.
 3. Follow install instruction on `Ipopt`.
+4. Follow install instruction on `CppAD`.
 
 Install dependencies for python3
 ```
