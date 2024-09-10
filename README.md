@@ -2,26 +2,46 @@
 
 Implementation of control algorithms for the cart-pole system, including Nonlinear Model Predictive Control (NMPC), Linear Quadratic Control (LQR), and Linear Model Predictive Control (LMPC). 
 
-(add the gif for the cart-pole system)
+<p align="center">
+  <img src="data/finite_LQR/cartpole.gif" alt="Cart-Pole System" width="400">
+</p>
 
-## LQR/NMPC Controllers
+## Implemented Controllers
 
-// TODO: Results of (gif) of the two controllers. Table Form
+1. Linear Quadratic Regulator (LQR)
+   - Infinite-horizon using Continuous Algebraic Riccati Equation (CARE)
+   - Infinite-horizon using Discrete Algebraic Riccati Equation (DARE)
+   - Finite-horizon LQR
 
-## Dependencies
+   | Infinite-horizon LQR (CARE) | Infinite-horizon LQR (DARE) | Finite-horizon LQR |
+   |:---------------------------:|:---------------------------:|:------------------:|
+   | <img src="data/infinite_LQR_CARE/plots.gif" width="400"> | <img src="data/infinite_LQR_DARE/plots.gif" width="400"> | <img src="data/finite_LQR/plots.gif" width="400"> |
 
-Follow the instructions (link) to install Ipopt.
-1. Request and download `Coin-HSL Archive` (free for personal use). 
-2. Folllow install instruction on `ThirdParty-HSL` to install the solver library. 
-For step 1 and 2, you can also use MUMPS solver alternatively by following instructions on `ThirdParty-MUMPS`.
-3. Follow install instruction on `Ipopt`.
-4. Follow install instruction on `CppAD`.
+2. Linear Model Predictive Control (LMPC)
+   - Unconstrained LMPC with analytical solution
+   - Constrained LMPC using Quadratic Programming (QP) solver
 
-Install dependencies for python3
-```
-pip3 install -r requirements.txt
-```
+   | Unconstrained LMPC | Constrained LMPC |
+   |:------------------:|:----------------:|
+   | <img src="data/unconstrained_LMPC/plots.gif" width="400"> | <img src="data/constrained_LMPC/plots.gif" width="400"> |
 
+3. Nonlinear Model Predictive Control (NMPC)
+
+   | Nonlinear Model Predictive Control (NMPC) |
+   |:------------------------------------------:|
+   | <img src="data/NMPC/plots.gif" width="400"> |
+
+
+## Preparation
+
+### Install Ipopt solver:
+   1. Download `Coin-HSL Archive` (free for personal use)
+   2. Install HSL solvers following instructions in `ThirdParty-HSL`
+   3. Alternatively, use MUMPS solver by following instructions in `ThirdParty-MUMPS`
+   4. Install Ipopt following provided instructions
+   5. Install CppAD following provided instructions
+
+### Test dependencies
 The cart-pole env in gymnasium was used for visualization. Test if visualization is set up correctly. 
 ```
 python3 ./vis/examples/test_vis.py
@@ -29,20 +49,24 @@ python3 ./vis/examples/test_vis.py
 
 Test if the cart-pole plant (physical model) can run smoothly:
 ```
-python3 ./system/plant.py --enable_vis
+python3 -m system.plant --enable_vis
 ```
 
-## Build
+### Python Dependencies
+Install required Python packages:
+```
+pip3 install -r requirements.txt
+```
 
-build
+## Simulation
 
+Build the project with cmake:
 ```
 mkdir build && cd build
 cmake ..
 make -j4
 ```
 
-## Simulation
 
 How to run the simulation
 
@@ -51,7 +75,6 @@ python3 run.py --save_gif
 ```
 
 ## Settings
-
 Settings of the controller type and parameter values are in the json file, `config/control_param.json`.  
 
 ```
@@ -91,4 +114,3 @@ Settings of the controller type and parameter values are in the json file, `conf
 }
 
 ```
-
